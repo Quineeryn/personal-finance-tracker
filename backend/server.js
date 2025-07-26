@@ -8,6 +8,7 @@ const authRoutes = require('./src/api/auth/authRoutes');
 const db = require('./src/models');
 const testRoutes = require('./src/api/test/testRoutes');
 const transactionRoutes = require('./src/api/transactions/transactionRoutes');
+const budgetsRoutes = require('./src/api/budgets/budgetsRoutes');
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.use(express.json());
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/test', testRoutes);
 app.use('/api/v1/transactions', transactionRoutes);
+app.use('/api/v1/budgets', budgetsRoutes );
 
 // Test Route
 app.get('/', (req, res) => {

@@ -1,5 +1,7 @@
 // src/api/auth/auth.controller.js
 const db = require('../../models');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = db.User;
 
 exports.register = async (req, res) => {

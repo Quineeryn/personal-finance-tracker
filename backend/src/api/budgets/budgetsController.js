@@ -15,7 +15,7 @@ exports.createBudget = async (req, res) => {
       category,
       amount,
       month, // Format "YYYY-MM"
-      userId: req.userId // Diambil dari token JWT
+      userId: req.userId // Diambil dari token JWTT
     });
 
     res.status(201).send(newBudget);

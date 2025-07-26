@@ -35,16 +35,12 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // 1. Cari user berdasarkan email
     const user = await User.findOne({ where: { email: email } });
-    if (!user) {
-      return res.status(404).send({ message: 'User not found.' });
-    }
+    const isPasswordValid = user ? bcrypt.compareSync(password, user.password) : false;
 
-    // 2. Bandingkan password
-    const isPasswordValid = bcrypt.compareSync(password, user.password);
-    if (!isPasswordValid) {
-      return res.status(401).send({ message: 'Invalid credentials.' });
+    if (!user || !isPasswordValid) {
+      // Selalu kirim pesan yang sama
+      return res.status(401).send({ message: 'Invalid email or password.' });
     }
 
     // 3. Buat JSON Web Token (JWT)

@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState} from "react";
 import { AuthContext } from '../context/AuthContext';
 import transactionService from "../api/transactionService";
+import ExpensePieChart from '../components/charts/ExpensePieChart';
 
 export default function DashboardPage() {
   const [transactions, setTransactions] = useState([]);
@@ -36,6 +37,13 @@ export default function DashboardPage() {
       </div>
 
       {error && <p className="mt-4 text-red-500">{error}</p>}
+      
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold">Expense Breakdown</h2>
+        <div className="w-full p-4 mx-auto mt-4 bg-white rounded-lg shadow lg:w-1/2">
+          <ExpensePieChart transactions={transactions} />
+        </div>
+      </div>
 
       <div className="mt-6">
         <h2 className="text-xl font-semibold">Recent Transactions</h2>

@@ -1,16 +1,34 @@
-import { createContext, useState } from 'react';
+import { createContext, useState, useEffect } from 'react';
 
-// 1. Buat Context-nya
 const AuthContext = createContext();
 
-// 2. Buat Provider-nya (Komponen yang akan menyediakan data)
 function AuthProvider({ children }) {
-  const [token, setToken] = useState(null); // State untuk menyimpan token
+  // Coba ambil token dari localStorage saat pertama kali dijalankan
+  const [token, setToken] = useState(localStorage.getItem('authToken'));
 
-  // Nilai yang akan dibagikan ke seluruh aplikasi
+  // Efek ini akan berjalan setiap kali 'token' berubah
+  useEffect(() => {
+    if (token) {
+      // Jika ada token, simpan di localStorage
+      localStorage.setItem('authToken', token);
+    } else {
+      // Jika tidak ada token (saat logout), hapus dari localStorage
+      localStorage.removeItem('authToken');
+    }
+  }, [token]);
+
+  const login = (newToken) => {
+    setToken(newToken);
+  };
+
+  const logout = () => {
+    setToken(null);
+  };
+
   const valueToShare = {
     token,
-    setToken,
+    login, 
+    logout,
   };
 
   return (
@@ -20,5 +38,4 @@ function AuthProvider({ children }) {
   );
 }
 
-// 3. Export Context dan Provider
 export { AuthContext, AuthProvider };

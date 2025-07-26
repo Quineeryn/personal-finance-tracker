@@ -8,7 +8,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
-  const { setToken } = useContext(AuthContext);
+  const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -18,7 +18,7 @@ export default function LoginPage() {
     try {
       const response = await AuthService.login(email, password);
       if (response.data.accessToken) {
-        setToken(response.data.accessToken);
+        login(response.data.accessToken);
         navigate('/');
       }
     } catch (error) {

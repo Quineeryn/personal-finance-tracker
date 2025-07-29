@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import TransactionService from '../api/transaction.service';
+import TransactionService from '../api/transactionService';
 import ExpensePieChart from '../components/charts/ExpensePieChart';
 import Modal from '../components/common/Modal'; // Step 5: Import Modal
 import TransactionForm from '../components/transactions/transactionForm'; // Step 5: Import TransactionForm

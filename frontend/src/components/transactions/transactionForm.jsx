@@ -12,7 +12,7 @@ export default function TransactionForm({ onSubmit, onCancel, initialData = {} }
     onSubmit({ type, amount: parseFloat(amount), category, description, date });
   };
 
-  return (
+  return(
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label htmlFor="type" className="block text-sm font-medium text-gray-700">Type</label>

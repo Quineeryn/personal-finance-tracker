@@ -34,7 +34,7 @@ export default function DashboardPage() {
   };
 
   const handleDeleteClick = async (id) => {
-    if(window.confirm("Are you sure you want to delete this ttransaction?")) {
+    if(window.confirm("Are you sure you want to delete this transaction?")) {
       try{
         await TransactionService.deleteTransaction(token, id);
         setTransactions(transactions.filler(tx => tx.id !== id));
@@ -120,7 +120,7 @@ export default function DashboardPage() {
         <TransactionForm
           onSubmit={handleSaveTransaction}
           onCancel={closeModal}
-          initialData={editingTransaction}
+          initialData={editingTransaction || {}}
         />
       </Modal>
     </div>

@@ -52,7 +52,7 @@ exports.deleteTransaction = async (req, res) => {
       return res.status(404).send({ message: "Transaction not found." });
     }
 
-    res.status(200).send({ message: "Transaction deleted successfully." });
+    res.sendStatus(204);
   } catch (error) {
     res.status(500).send({ message: error.message });
   }

@@ -10,6 +10,7 @@ export default function DashboardPage() {
   const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false); // Step 3: State untuk modal
   const { token, logout } = useContext(AuthContext);
+  const [editingTransaction, setEditingTransaction] = useState(null);
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -27,19 +28,41 @@ export default function DashboardPage() {
     }
   }, [token]);
 
-  // Step 4: Logika untuk menangani submit form
-  const handleCreateTransaction = async (formData) => {
-    try {
-      const response = await TransactionService.createTransaction(token, formData);
-      // Tambahkan transaksi baru ke daftar state agar UI langsung ter-update
-      setTransactions(prevTransactions => [...prevTransactions, response.data]);
-      setIsModalOpen(false); // Tutup modal setelah berhasil
-    } catch (err) {
-      console.error("Failed to create transaction", err);
-      // Di sini kamu bisa menambahkan state untuk menampilkan error form
-      alert("Failed to create transaction.");
+  const handleEditClick = (transactions) => {
+    setEditingTransaction(transactions);
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteClick = async (id) => {
+    if(window.confirm("Are you sure you want to delete this transaction?")) {
+      try{
+        await TransactionService.deleteTransaction(token, id);
+        setTransactions(transactions.filler(tx => tx.id !== id));
+      } catch (err) {
+        alert("Failed to delete transaction.");
+      }
     }
   };
+
+  const handleSaveTransaction = async (formData) => {
+    try{
+      if (editingTransaction) {
+        const response = await TransactionService.updateTransaction(token, editingTransaction.id, formData);
+        setTransactions(transactions.map(tx => tx.id === editingTransaction.id ? response.data : tx));
+      } else{
+        const response = await TransactionService.createTransaction(token, formData);
+        setTransactions([...transactions, response.data]);
+      }
+      closeModal();
+    } catch (err) {
+      alert("Failed to save transaction.")
+    }
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditingTransaction(null);
+  }
 
   return (
     <div className="container p-4 mx-auto md:p-8">
@@ -48,9 +71,8 @@ export default function DashboardPage() {
         <div className="flex items-center gap-4">
             {/* Step 3: Tombol "Tambah Transaksi" */}
             <button
-                onClick={() => setIsModalOpen(true)}
-                className="px-4 py-2 font-bold text-white bg-blue-600 rounded-md hover:bg-blue-700"
-            >
+                onClick={() => { setEditingTransaction(null); setIsModalOpen(true); }}
+                className="px-4 py-2 font-bold text-white bg-blue-600 rounded-md hover:bg-blue-700">
                 Add Transaction
             </button>
             <button
@@ -83,6 +105,8 @@ export default function DashboardPage() {
               <p className={`font-semibold ${tx.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
                 {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(tx.amount)}
               </p>
+              <button className="p-1 text-blue-600 hover:text-blue-800" onClick={() => handleEditClick(tx)}>Edit</button>
+              <button className="p-1 text-red-600 hover:text-red-800" onClick={() => handleDeleteClick(tx.id)}>Delete</button>
             </li>
           ))}
           {transactions.length === 0 && (
@@ -92,10 +116,11 @@ export default function DashboardPage() {
       </div>
 
       {/* Step 5: Tampilkan Modal & Form */}
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add New Transaction">
+      <Modal isOpen={isModalOpen} onClose={closeModal} title={editingTransaction ? "Edit Transaction" : "Add Transaction"}>
         <TransactionForm
-          onSubmit={handleCreateTransaction}
-          onCancel={() => setIsModalOpen(false)}
+          onSubmit={handleSaveTransaction}
+          onCancel={closeModal}
+          initialData={editingTransaction || {}}
         />
       </Modal>
     </div>

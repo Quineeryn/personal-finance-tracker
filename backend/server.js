@@ -11,7 +11,7 @@ const transactionRoutes = require('./src/api/transactions/transactionRoutes');
 const budgetsRoutes = require('./src/api/budgets/budgetsRoutes');
 
 const corsOption = {
-  origin: 'https://personal-finance-tracker-taupe.vercel.app/'
+  origin: 'https://personal-finance-tracker-taupe.vercel.app'
 }
 
 const app = express();

@@ -14,7 +14,17 @@ const createTransaction = (token, transactionData) => {
   return axios.post(`${API_BASE_URL}/api/v1/transactions`, transactionData, getAuthHeaders(token));
 }
 
+const updateTransaction = (token, id, transactionData) => {
+  return axios.put(`${API_BASE_URL}/api/v1/transactions/${id}`, transactionData, getAuthHeaders(token));
+}
+
+const deleteTransaction = (token, id) => {
+  return axios.delete(`${API_BASE_URL}/api/v1/transactions/${id}`, getAuthHeaders(token));
+}
+
 export default {
   getTransactions,
   createTransaction,
+  updateTransaction,
+  deleteTransaction,
 };

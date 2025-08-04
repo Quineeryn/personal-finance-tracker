@@ -7,4 +7,10 @@ export default defineConfig({
     react(),      // <-- Plugin React harus tetap ada
     tailwindcss(),
   ],
+
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
 })

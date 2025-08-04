@@ -21,7 +21,7 @@ const whitelist = [
 
 const corsOptions = {
   origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1 || origin.endsWith('-canandras-projects.vercel.app') || !origin) {
+    if (!origin || whitelist.indexOf(origin) !== -1 || origin.endsWith('-canandras-projects.vercel.app')) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));

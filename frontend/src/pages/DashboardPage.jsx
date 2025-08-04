@@ -37,8 +37,9 @@ export default function DashboardPage() {
     if(window.confirm("Are you sure you want to delete this transaction?")) {
       try{
         await TransactionService.deleteTransaction(token, id);
-        setTransactions(transactions.filler(tx => tx.id !== id));
+        setTransactions(transactions.filter(tx => tx.id !== id));
       } catch (err) {
+        console.error("Delete Failed:", err.response || err);
         alert("Failed to delete transaction.");
       }
     }

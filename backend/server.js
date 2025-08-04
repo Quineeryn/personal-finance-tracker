@@ -10,14 +10,24 @@ const testRoutes = require('./src/api/test/testRoutes');
 const transactionRoutes = require('./src/api/transactions/transactionRoutes');
 const budgetsRoutes = require('./src/api/budgets/budgetsRoutes');
 
-const corsOption = {
-  origin: 'https://personal-finance-tracker-taupe.vercel.app'
-}
+const whiteList = [
+  'https://personal-finance-tracker-taupe.vercel.app',
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (whitelist.indexOf(origin) !== -1 || origin.endsWith('-canandras-projects.vercel.app') || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+};
 
 const app = express();
 
 // Middlewares
-app.use(cors(corsOption));
+app.use(cors(corsOptions));
 app.use(express.json());
 
 

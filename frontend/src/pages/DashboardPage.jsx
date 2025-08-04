@@ -4,6 +4,7 @@ import TransactionService from '../api/transactionService';
 import ExpensePieChart from '../components/charts/ExpensePieChart';
 import Modal from '../components/common/Modal'; // Step 5: Import Modal
 import TransactionForm from '../components/transactions/transactionForm'; // Step 5: Import TransactionForm
+import { Button } from '@/components/ui/button';
 
 export default function DashboardPage() {
   const [transactions, setTransactions] = useState([]);
@@ -71,17 +72,12 @@ export default function DashboardPage() {
         <h1 className="text-3xl font-bold">Dashboard</h1>
         <div className="flex items-center gap-4">
             {/* Step 3: Tombol "Tambah Transaksi" */}
-            <button
-                onClick={() => { setEditingTransaction(null); setIsModalOpen(true); }}
-                className="px-4 py-2 font-bold text-white bg-blue-600 rounded-md hover:bg-blue-700">
+            <Button onClick={() => { setEditingTransaction(null); setIsModalOpen(true); }}>
                 Add Transaction
-            </button>
-            <button
-                onClick={logout}
-                className="px-4 py-2 font-bold text-white bg-red-500 rounded hover:bg-red-700"
-            >
+            </Button>
+            <Button variant="destructive" onClick={logout}>
                 Logout
-            </button>
+            </Button>
         </div>
       </div>
 
@@ -106,8 +102,8 @@ export default function DashboardPage() {
               <p className={`font-semibold ${tx.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
                 {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(tx.amount)}
               </p>
-              <button className="p-1 text-blue-600 hover:text-blue-800" onClick={() => handleEditClick(tx)}>Edit</button>
-              <button className="p-1 text-red-600 hover:text-red-800" onClick={() => handleDeleteClick(tx.id)}>Delete</button>
+              <Button variant="outline" onClick={() => handleEditClick(tx)}>Edit</Button>
+              <Button variant="destructive" onClick={() => handleDeleteClick(tx.id)}>Delete</Button>
             </li>
           ))}
           {transactions.length === 0 && (

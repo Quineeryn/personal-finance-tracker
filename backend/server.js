@@ -12,14 +12,22 @@ const transactionRoutes = require('./src/api/transactions/transactionRoutes');
 const budgetRoutes = require('./src/api/budgets/budgetsRoutes');
 
 // Konfigurasi CORS hanya untuk URL produksi
-const corsOptions = {
-  origin: 'https://personal-finance-tracker-taupe.vercel.app'
-};
 
 const app = express();
 
-// Menangani preflight request
-app.options('*', cors(corsOptions));
+const whitelist = [
+  'https://personal-finance-tracker-taupe.vercel.app',
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (whitelist.indexOf(origin) !== -1 || origin.endsWith('-canandras-projects.vercel.app') || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+};
 
 // Middlewares
 app.use(cors(corsOptions));

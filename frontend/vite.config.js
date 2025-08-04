@@ -1,3 +1,4 @@
+import path from "path"
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'         // <-- Pastikan ini ada
 import tailwindcss from '@tailwindcss/vite'

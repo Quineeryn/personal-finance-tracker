@@ -1,38 +1,37 @@
+// backend/server.js
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const db = require('./src/models');
 
+// Impor semua rute
 const authRoutes = require('./src/api/auth/authRoutes');
 const testRoutes = require('./src/api/test/testRoutes');
 const transactionRoutes = require('./src/api/transactions/transactionRoutes');
 const budgetRoutes = require('./src/api/budgets/budgetsRoutes');
 
-const whitelist = [
-  'https://personal-finance-tracker-taupe.vercel.app',
-];
-
+// Konfigurasi CORS hanya untuk URL produksi
 const corsOptions = {
-  origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1 || (origin && origin.endsWith('-canandras-projects.vercel.app')) || !origin) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  }
+  origin: 'https://personal-finance-tracker-taupe.vercel.app'
 };
 
 const app = express();
 
+// Menangani preflight request
 app.options('*', cors(corsOptions));
+
+// Middlewares
 app.use(cors(corsOptions));
 app.use(express.json());
 
+// Gunakan semua rute
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/test', testRoutes);
 app.use('/api/v1/transactions', transactionRoutes);
 app.use('/api/v1/budgets', budgetRoutes);
 
+// Test Route
 app.get('/', (req, res) => {
   res.send('Backend API is running!');
 });

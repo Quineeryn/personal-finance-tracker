@@ -10,6 +10,21 @@ const getBudgets = (token) => {
   return axios.get(`${API_BASE_URL}/api/v1/budgets`, getAuthHeaders(token));
 };
 
+const createBudget = (token, budgetData) => {
+  return axios.post(`${API_BASE_URL}/api/v1/budgets`, budgetData, getAuthHeaders(token));
+};
+
+const updateBudget = (token, id, budgetData) => {
+  return axios.put(`${API_BASE_URL}/api/v1/budgets/${id}`, budgetData, getAuthHeaders(token));
+};
+
+const deleteBudget = (token, id) => {
+  return axios.delete(`${API_BASE_URL}/api/v1/budgets/${id}`, getAuthHeaders(token));
+};
+
 export default {
   getBudgets,
+  createBudget,
+  updateBudget,
+  deleteBudget,
 };

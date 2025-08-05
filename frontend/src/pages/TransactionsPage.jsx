@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import TransactionService from '../api/transactionService';
 import Modal from '../components/common/Modal';
-import TransactionForm from '../components/transactions/TransactionForm';
+import TransactionForm from '../components/transactions/transactionForm';
 
 // Shadcn UI Components
 import { Button } from '@/components/ui/button';

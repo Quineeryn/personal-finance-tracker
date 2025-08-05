@@ -3,6 +3,7 @@ import { AuthContext } from '../context/AuthContext';
 import TransactionService from '../api/transactionService';
 import Modal from '../components/common/Modal';
 import TransactionForm from '../components/transactions/transactionForm';
+import { CardFooter } from '@/components/ui/card';
 
 // Shadcn UI Components
 import { Button } from '@/components/ui/button';
@@ -153,9 +154,10 @@ export default function TransactionsPage() {
             Add Transaction
           </Button>
         </CardHeader>
-        <CardContent className="flex-1 overflow-y-auto">
+
+        
           {/* Filter Bar */}
-          <div className="flex flex-wrap items-center gap-4 mb-6 p-4 bg-muted/40 rounded-lg">
+          <div className="flex flex-wrap items-center gap-4 p-6 pt-0">
             <DatePickerWithRange date={dateRange} setDate={setDateRange} />
             <Select value={typeFilter} onValueChange={setTypeFilter}>
               <SelectTrigger className="w-full sm:w-[180px]">
@@ -179,6 +181,7 @@ export default function TransactionsPage() {
           </div>
 
           {/* Tabel Transaksi */}
+          <CardContent className="flex-1 overflow-y-auto">
           <Table>
             <TableHeader  className="sticky top-0 z-10 bg-white">
               <TableRow>
@@ -234,9 +237,10 @@ export default function TransactionsPage() {
               </TableRow>
             </TableFooter>
           </Table>
+        </CardContent>
           
           {/* Kontrol Pagination */}
-          <div className="flex items-center justify-end p-4 space-x-2 border-t">
+          <CardFooter className="flex items-center justify-end p-4 space-x-2 border-t">
             <span className="text-sm text-muted-foreground">
               Page {currentPage} of {Math.ceil(processedData.length / ITEMS_PER_PAGE)}
             </span>
@@ -256,8 +260,7 @@ export default function TransactionsPage() {
             >
               Next
             </Button>
-          </div>
-        </CardContent>
+          </CardFooter>
       </Card>
 
       {/* Modal dan Dialog */}

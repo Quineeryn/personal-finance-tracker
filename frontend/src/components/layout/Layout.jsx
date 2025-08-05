@@ -68,7 +68,7 @@ export default function Layout() {
 
       <div className="flex flex-col flex-1">
         {/* Konten Utama */}
-        <main className="flex-1 p-4 overflow-y-auto bg-gray-50 md:p-8">
+        <main className="flex flex-col flex-1 gap-4 p-4 overflow-auto bg-gray-50 lg:gap-8 lg:p-8">
           <Outlet /> {/* <-- Semua halaman (Dashboard, Transaksi) akan dirender di sini */}
         </main>
       </div>

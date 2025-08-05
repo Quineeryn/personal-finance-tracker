@@ -141,9 +141,9 @@ export default function TransactionsPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col h-full space-y-8">
       {error && <p className="text-red-500">{error}</p>}
-      <Card>
+      <Card className="flex flex-col flex-1">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle>All Transactions</CardTitle>
@@ -153,7 +153,7 @@ export default function TransactionsPage() {
             Add Transaction
           </Button>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex-1 overflow-y-auto">
           {/* Filter Bar */}
           <div className="flex flex-wrap items-center gap-4 mb-6 p-4 bg-muted/40 rounded-lg">
             <DatePickerWithRange date={dateRange} setDate={setDateRange} />
@@ -180,7 +180,7 @@ export default function TransactionsPage() {
 
           {/* Tabel Transaksi */}
           <Table>
-            <TableHeader>
+            <TableHeader  className="sticky top-0 z-10 bg-white">
               <TableRow>
                 <TableHead>
                   <Button variant="ghost" onClick={() => requestSort('date')}>
@@ -217,7 +217,7 @@ export default function TransactionsPage() {
                 </TableRow>
               )}
             </TableBody>
-            <TableFooter>
+            <TableFooter  className="sticky bottom-0 z-10 bg-gray-50" >
               <TableRow>
                 <TableCell colSpan="3" className="font-bold">Total Income (Filtered)</TableCell>
                 <TableCell className="text-right font-bold text-green-600">
@@ -236,7 +236,7 @@ export default function TransactionsPage() {
           </Table>
           
           {/* Kontrol Pagination */}
-          <div className="flex items-center justify-end space-x-2 py-4">
+          <div className="flex items-center justify-end p-4 space-x-2 border-t">
             <span className="text-sm text-muted-foreground">
               Page {currentPage} of {Math.ceil(processedData.length / ITEMS_PER_PAGE)}
             </span>

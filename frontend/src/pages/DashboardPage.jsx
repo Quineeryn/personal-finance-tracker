@@ -217,7 +217,7 @@ export default function DashboardPage() {
 
       <main className="container grid gap-8 px-4 pb-8 mx-auto md:grid-cols-3">
         <div className="md:col-span-2">
-          <Card>
+          <Card className="flex flex-col">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>Today's Transactions</CardTitle>
@@ -227,10 +227,10 @@ export default function DashboardPage() {
                 Add Transaction
               </Button>
             </CardHeader>
-            <div className="h-[500px] overflow-y-auto">
-            <CardContent>
+            
+            <CardContent className="flex-1 overflow-y-auto">
               <Table>
-                <TableHeader className="sticky top-0 bg-white">
+                <TableHeader className="sticky top-0 bg-white z-10">
                   <TableRow>
                     <TableHead>Date</TableHead>
                     <TableHead>Description</TableHead>
@@ -261,7 +261,7 @@ export default function DashboardPage() {
                 </TableBody>
               </Table>
             </CardContent>
-            </div>
+            
           </Card>
         </div>
 

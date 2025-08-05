@@ -142,10 +142,12 @@ export default function TransactionsPage() {
   };
 
   return (
-    <div className="flex flex-col h-full space-y-8">
-      {error && <p className="text-red-500">{error}</p>}
-      <Card className="flex flex-col flex-1">
-        <CardHeader className="flex flex-row items-center justify-between">
+    <div className="h-full flex flex-col">
+      {error && <p className="text-red-500 mb-4">{error}</p>}
+      
+      <Card className="flex flex-col h-full">
+        {/* Header - Fixed height */}
+        <CardHeader className="flex-shrink-0 flex flex-row items-center justify-between">
           <div>
             <CardTitle>All Transactions</CardTitle>
             <CardDescription>Filter, manage, and review all your transactions.</CardDescription>
@@ -155,112 +157,125 @@ export default function TransactionsPage() {
           </Button>
         </CardHeader>
 
-        
-          {/* Filter Bar */}
-          <div className="flex flex-wrap items-center gap-4 p-6 pt-0">
-            <DatePickerWithRange date={dateRange} setDate={setDateRange} />
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Filter by type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="income">Income</SelectItem>
-                <SelectItem value="expense">Expense</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Filter by category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {availableCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
+        {/* Filter Bar - Fixed height */}
+        <div className="flex-shrink-0 flex flex-wrap items-center gap-4 px-6 pb-4">
+          <DatePickerWithRange date={dateRange} setDate={setDateRange} />
+          <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Filter by type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="income">Income</SelectItem>
+              <SelectItem value="expense">Expense</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Filter by category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {availableCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
 
-          {/* Tabel Transaksi */}
-          <CardContent className="flex-1 overflow-y-auto">
-          <Table>
-            <TableHeader  className="sticky top-0 z-10 bg-white">
-              <TableRow>
-                <TableHead>
-                  <Button variant="ghost" onClick={() => requestSort('date')}>
-                    Date <ArrowUpDown className="ml-2 h-4 w-4" />
-                  </Button>
-                </TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead className="text-right">
-                  <Button variant="ghost" onClick={() => requestSort('amount')}>
-                    Amount <ArrowUpDown className="ml-2 h-4 w-4" />
-                  </Button>
-                </TableHead>
-                <TableHead className="text-center">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedTransactions.length > 0 ? paginatedTransactions.map((tx) => (
-                <TableRow key={tx.id}>
-                  <TableCell>{new Date(tx.date).toLocaleDateString()}</TableCell>
-                  <TableCell className="font-medium">{tx.description || '-'}</TableCell>
-                  <TableCell>{tx.category}</TableCell>
-                  <TableCell className={`text-right font-semibold ${tx.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                    {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(tx.amount)}
-                  </TableCell>
-                  <TableCell className="flex justify-center gap-2">
-                    <Button variant="outline" size="sm" onClick={() => handleEditClick(tx)}>Edit</Button>
-                    <Button variant="destructive" size="sm" onClick={() => handleDeleteClick(tx.id)}>Hapus</Button>
-                  </TableCell>
-                </TableRow>
-              )) : (
+        {/* Table Container - Flexible height with internal scroll */}
+        <CardContent className="flex-1 flex flex-col px-6 pb-0 min-h-0">
+          <div className="flex-1 border rounded-md overflow-hidden">
+            <Table>
+              <TableHeader className="sticky top-0 z-10 bg-white">
                 <TableRow>
-                  <TableCell colSpan="5" className="h-24 text-center">No transactions found with the current filters.</TableCell>
+                  <TableHead>
+                    <Button variant="ghost" onClick={() => requestSort('date')}>
+                      Date <ArrowUpDown className="ml-2 h-4 w-4" />
+                    </Button>
+                  </TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead className="text-right">
+                    <Button variant="ghost" onClick={() => requestSort('amount')}>
+                      Amount <ArrowUpDown className="ml-2 h-4 w-4" />
+                    </Button>
+                  </TableHead>
+                  <TableHead className="text-center">Actions</TableHead>
                 </TableRow>
-              )}
-            </TableBody>
-            <TableFooter  className="sticky bottom-0 z-10 bg-gray-50" >
-              <TableRow>
-                <TableCell colSpan="3" className="font-bold">Total Income (Filtered)</TableCell>
-                <TableCell className="text-right font-bold text-green-600">
-                  {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(summary.totalIncome)}
-                </TableCell>
-                <TableCell />
-              </TableRow>
-              <TableRow>
-                <TableCell colSpan="3" className="font-bold">Total Expense (Filtered)</TableCell>
-                <TableCell className="text-right font-bold text-red-600">
-                  {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(summary.totalExpense)}
-                </TableCell>
-                <TableCell />
-              </TableRow>
-            </TableFooter>
-          </Table>
+              </TableHeader>
+            </Table>
+            
+            {/* Scrollable body */}
+            <div className="overflow-y-auto flex-1" style={{ maxHeight: 'calc(100vh - 420px)' }}>
+              <Table>
+                <TableBody>
+                  {paginatedTransactions.length > 0 ? paginatedTransactions.map((tx) => (
+                    <TableRow key={tx.id}>
+                      <TableCell>{new Date(tx.date).toLocaleDateString()}</TableCell>
+                      <TableCell className="font-medium">{tx.description || '-'}</TableCell>
+                      <TableCell>{tx.category}</TableCell>
+                      <TableCell className={`text-right font-semibold ${tx.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                        {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(tx.amount)}
+                      </TableCell>
+                      <TableCell className="flex justify-center gap-2">
+                        <Button variant="outline" size="sm" onClick={() => handleEditClick(tx)}>Edit</Button>
+                        <Button variant="destructive" size="sm" onClick={() => handleDeleteClick(tx.id)}>Hapus</Button>
+                      </TableCell>
+                    </TableRow>
+                  )) : (
+                    <TableRow>
+                      <TableCell colSpan="5" className="h-24 text-center">No transactions found with the current filters.</TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Fixed Footer */}
+            <div className="border-t bg-gray-50">
+              <Table>
+                <TableFooter>
+                  <TableRow>
+                    <TableCell colSpan="3" className="font-bold">Total Income (Filtered)</TableCell>
+                    <TableCell className="text-right font-bold text-green-600">
+                      {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(summary.totalIncome)}
+                    </TableCell>
+                    <TableCell />
+                  </TableRow>
+                  <TableRow>
+                    <TableCell colSpan="3" className="font-bold">Total Expense (Filtered)</TableCell>
+                    <TableCell className="text-right font-bold text-red-600">
+                      {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(summary.totalExpense)}
+                    </TableCell>
+                    <TableCell />
+                  </TableRow>
+                </TableFooter>
+              </Table>
+            </div>
+          </div>
         </CardContent>
           
-          {/* Kontrol Pagination */}
-          <CardFooter className="flex items-center justify-end p-4 space-x-2 border-t">
-            <span className="text-sm text-muted-foreground">
-              Page {currentPage} of {Math.ceil(processedData.length / ITEMS_PER_PAGE)}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(prev => prev + 1)}
-              disabled={currentPage * ITEMS_PER_PAGE >= processedData.length}
-            >
-              Next
-            </Button>
-          </CardFooter>
+        {/* Pagination Footer - Fixed height */}
+        <CardFooter className="flex-shrink-0 flex items-center justify-end p-4 space-x-2 border-t">
+          <span className="text-sm text-muted-foreground">
+            Page {currentPage} of {Math.ceil(processedData.length / ITEMS_PER_PAGE)}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(prev => prev + 1)}
+            disabled={currentPage * ITEMS_PER_PAGE >= processedData.length}
+          >
+            Next
+          </Button>
+        </CardFooter>
       </Card>
 
       {/* Modal dan Dialog */}

@@ -121,9 +121,9 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-5">
         {/* Kolom utama untuk Transaksi Hari Ini */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-3">
           <Card>
             <CardHeader className="flex flex-row items-center">
               <div className="grid gap-2">
@@ -171,12 +171,12 @@ export default function DashboardPage() {
         </div>
 
         {/* Kolom samping untuk Budget dan Chart */}
-        <div className="space-y-8 lg:col-span-1">
-          <Card>
+        <div className="space-y-8 lg:col-span-2">
+          <Card className="flex flex-col h-96">
             <CardHeader>
               <CardTitle>Budget Status (This Month)</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="flex-1 overflow-y-auto space-y-4">
               {budgetProgress.length > 0 ? budgetProgress.map(budget => (
                 <BudgetStatus
                   key={budget.id}

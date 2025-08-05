@@ -1,35 +1,31 @@
+// src/context/AuthContext.jsx
 import { createContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext();
 
 function AuthProvider({ children }) {
-  // Coba ambil token dari localStorage saat pertama kali dijalankan
-  const [token, setToken] = useState(localStorage.getItem('authToken'));
+  // Ambil user dari localStorage, parse dari JSON
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')));
+  const token = user?.accessToken; // Ambil token dari objek user
 
-  // Efek ini akan berjalan setiap kali 'token' berubah
   useEffect(() => {
-    if (token) {
-      // Jika ada token, simpan di localStorage
-      localStorage.setItem('authToken', token);
+    if (user) {
+      // Simpan seluruh objek user sebagai string JSON
+      localStorage.setItem('user', JSON.stringify(user));
     } else {
-      // Jika tidak ada token (saat logout), hapus dari localStorage
-      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
     }
-  }, [token]);
+  }, [user]);
 
-  const login = (newToken) => {
-    setToken(newToken);
+  const login = (userData) => {
+    setUser(userData);
   };
 
   const logout = () => {
-    setToken(null);
+    setUser(null);
   };
 
-  const valueToShare = {
-    token,
-    login, 
-    logout,
-  };
+  const valueToShare = { user, token, login, logout };
 
   return (
     <AuthContext.Provider value={valueToShare}>

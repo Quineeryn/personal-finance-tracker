@@ -1,10 +1,14 @@
 import { useState, useEffect, useContext, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import TransactionService from '../api/transactionService';
 import BudgetService from '../api/budgetService';
 import ExpensePieChart from '../components/charts/ExpensePieChart';
 import BudgetStatus from '../components/budgets/budgetStatus';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ArrowUpRight } from 'lucide-react';
 
 export default function DashboardPage() {
   const [transactions, setTransactions] = useState([]);
@@ -46,6 +50,19 @@ export default function DashboardPage() {
     return { income, expense, balance: income - expense, totalTransactions: relevantTransactions.length };
   }, [transactions]);
 
+  const todaysTransactions = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return transactions
+      .filter(tx => {
+        const txDate = new Date(tx.date);
+        txDate.setHours(0, 0, 0, 0);
+        return txDate.getTime() === today.getTime();
+      })
+      .slice(0, 5);
+  }, [transactions]);
+
   const budgetProgress = useMemo(() => {
     const now = new Date();
     const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -68,8 +85,8 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
+      {/* Stat Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {/* Stat Cards */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-sm font-medium">This Month's Balance</CardTitle>
@@ -104,9 +121,57 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid gap-8 md:grid-cols-3">
-        {/* Kolom kiri untuk ringkasan transaksi terbaru (opsional) */}
-        <div className="space-y-8 md:col-span-1">
+      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+        {/* Kolom utama untuk Transaksi Hari Ini */}
+        <div className="lg:col-span-2">
+          <Card>
+            <CardHeader className="flex flex-row items-center">
+              <div className="grid gap-2">
+                <CardTitle>Today's Transactions</CardTitle>
+                <CardDescription>
+                  Your latest transactions for today.
+                </CardDescription>
+              </div>
+              <Button asChild size="sm" className="ml-auto gap-1">
+                <Link to="/transactions">
+                  View All
+                  <ArrowUpRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {todaysTransactions.length > 0 ? todaysTransactions.map((tx) => (
+                    <TableRow key={tx.id}>
+                      <TableCell className="font-medium">{tx.description || '-'}</TableCell>
+                      <TableCell>{tx.category}</TableCell>
+                      <TableCell className={`text-right font-semibold ${tx.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                        {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(tx.amount)}
+                      </TableCell>
+                    </TableRow>
+                  )) : (
+                    <TableRow>
+                      <TableCell colSpan="3" className="h-24 text-center">
+                        No transactions for today.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Kolom samping untuk Budget dan Chart */}
+        <div className="space-y-8 lg:col-span-1">
           <Card>
             <CardHeader>
               <CardTitle>Budget Status (This Month)</CardTitle>
@@ -124,16 +189,13 @@ export default function DashboardPage() {
               )}
             </CardContent>
           </Card>
-        </div>
-        {/* Kolom kanan untuk pie chart */}
-        <div className="md:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle>Expense Breakdown</CardTitle>
+              <CardTitle>Expense Breakdown (Today)</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="w-full max-w-md p-4 mx-auto">
-                <ExpensePieChart transactions={transactions.filter(tx => tx.type === 'expense')} />
+              <div className="w-full max-w-xs p-4 mx-auto">
+                <ExpensePieChart transactions={todaysTransactions} />
               </div>
             </CardContent>
           </Card>

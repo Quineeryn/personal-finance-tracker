@@ -24,7 +24,7 @@ export default function LoginPage() {
     try {
       const response = await AuthService.login(email, password);
       if (response.data.accessToken) {
-        login(response.data.accessToken);
+        login(response.data);
         navigate('/');
       }
     } catch (error) {

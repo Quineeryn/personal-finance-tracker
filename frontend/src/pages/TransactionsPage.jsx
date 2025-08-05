@@ -3,34 +3,37 @@ import { AuthContext } from '../context/AuthContext';
 import TransactionService from '../api/transactionService';
 import Modal from '../components/common/Modal';
 import TransactionForm from '../components/transactions/transactionForm';
-import { TableFooter } from "@/components/ui/table";
+
 // Shadcn UI Components
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePickerWithRange } from "@/components/ui/date-picker-with-range";
+import { ArrowUpDown } from 'lucide-react';
 
 export default function TransactionsPage() {
+  // State utama
   const [transactions, setTransactions] = useState([]);
   const [error, setError] = useState('');
   
-  // State untuk filter
+  // State untuk filter, sort, dan pagination
   const [dateRange, setDateRange] = useState({ from: undefined, to: undefined });
   const [typeFilter, setTypeFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   // State untuk modal & dialog
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [deleteAlert, setDeleteAlert] = useState({ isOpen: false, transactionId: null });
-  const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' }); // Default urutkan berdasarkan tanggal terbaru
-  const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 10
   
   const { token } = useContext(AuthContext);
 
+  // Mengambil data dari API
   useEffect(() => {
     if (token) {
       TransactionService.getTransactions(token)
@@ -45,51 +48,56 @@ export default function TransactionsPage() {
     return Array.from(categories);
   }, [transactions]);
 
-  const paginatedTransactions = useMemo(() => {
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  return filteredTransactions.slice(startIndex, endIndex);
-  }, [filteredTransactions, currentPage]);
-
-  // Logika untuk memfilter transaksi
-  const filteredTransactions = useMemo(() => {
-    let sortableItems = [...transactions];
-
-    sortableItems.sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
-        return sortConfig.direction === 'asc' ? -1 : 1;
-        }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
-        return sortConfig.direction === 'asc' ? 1 : -1;
-        }
-        return 0;
-    });
-    
-    return sortableItems.filter(tx => {
+  // Memproses data (filter & sort)
+  const processedData = useMemo(() => {
+    let filtered = [...transactions].filter(tx => {
       const transactionDate = new Date(tx.date);
       transactionDate.setHours(0, 0, 0, 0);
 
-      // Filter by Type
-      if (typeFilter !== 'all' && tx.type !== typeFilter) {
-        return false;
-      }
-      // Filter by Category
-      if (categoryFilter !== 'all' && tx.category !== categoryFilter) {
-        return false;
-      }
-      // Filter by Date Range
-      if (dateRange?.from && transactionDate < new Date(dateRange.from).setHours(0,0,0,0)) {
-        return false;
-      }
-      if (dateRange?.to && transactionDate > new Date(dateRange.to).setHours(0,0,0,0)) {
-        return false;
-      }
+      if (typeFilter !== 'all' && tx.type !== typeFilter) return false;
+      if (categoryFilter !== 'all' && tx.category !== categoryFilter) return false;
+      if (dateRange?.from && transactionDate < new Date(dateRange.from).setHours(0,0,0,0)) return false;
+      if (dateRange?.to && transactionDate > new Date(dateRange.to).setHours(0,0,0,0)) return false;
       
       return true;
     });
+
+    filtered.sort((a, b) => {
+      if (a[sortConfig.key] < b[sortConfig.key]) {
+        return sortConfig.direction === 'asc' ? -1 : 1;
+      }
+      if (a[sortConfig.key] > b[sortConfig.key]) {
+        return sortConfig.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+
+    return filtered;
   }, [transactions, typeFilter, categoryFilter, dateRange, sortConfig]);
+
+  // Memotong data untuk pagination
+  const paginatedTransactions = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return processedData.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [processedData, currentPage]);
+
+  // Menghitung ringkasan total
+  const summary = useMemo(() => {
+    const totalIncome = processedData.filter(tx => tx.type === 'income').reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
+    const totalExpense = processedData.filter(tx => tx.type === 'expense').reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
+    return { totalIncome, totalExpense };
+  }, [processedData]);
+
+  // Fungsi untuk mengubah sorting
+  const requestSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
   
-  // --- Handler Functions (closeModal, handleSaveTransaction, dll.) ---
+  // Fungsi-fungsi handler
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingTransaction(null);
@@ -107,15 +115,14 @@ export default function TransactionsPage() {
       closeModal();
     } catch (err) {
       alert("Failed to save transaction.");
-      console.error(err);
     }
   };
-
+  
   const handleEditClick = (transaction) => {
     setEditingTransaction(transaction);
     setIsModalOpen(true);
   };
-
+  
   const handleDeleteClick = (id) => {
     setDeleteAlert({ isOpen: true, transactionId: id });
   };
@@ -132,26 +139,6 @@ export default function TransactionsPage() {
       }
     }
   };
-
-  const requestSort = (key) => {
-  let direction = 'asc';
-  if (sortConfig.key === key && sortConfig.direction === 'asc') {
-    direction = 'desc';
-  }
-  setSortConfig({ key, direction });
-  };
-
-  const summary = useMemo(() => {
-  const totalIncome = filteredTransactions
-    .filter(tx => tx.type === 'income')
-    .reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
-  
-  const totalExpense = filteredTransactions
-    .filter(tx => tx.type === 'expense')
-    .reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
-    
-  return { totalIncome, totalExpense };
- }, [filteredTransactions]);
 
   return (
     <div className="space-y-8">
@@ -171,7 +158,7 @@ export default function TransactionsPage() {
           <div className="flex flex-wrap items-center gap-4 mb-6 p-4 bg-muted/40 rounded-lg">
             <DatePickerWithRange date={dateRange} setDate={setDateRange} />
             <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Filter by type" />
               </SelectTrigger>
               <SelectContent>
@@ -181,7 +168,7 @@ export default function TransactionsPage() {
               </SelectContent>
             </Select>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Filter by category" />
               </SelectTrigger>
               <SelectContent>
@@ -196,22 +183,22 @@ export default function TransactionsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>
-                <Button variant="ghost" onClick={() => requestSort('date')}>
-                    Date {sortConfig.key === 'date' ? (sortConfig.direction === 'asc' ? '🔼' : '🔽') : null}
-                </Button>
+                  <Button variant="ghost" onClick={() => requestSort('date')}>
+                    Date <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
                 </TableHead>
                 <TableHead>Description</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead className="text-right">
-                <Button variant="ghost" onClick={() => requestSort('amount')}>
-                    Amount {sortConfig.key === 'amount' ? (sortConfig.direction === 'asc' ? '🔼' : '🔽') : null}
-                </Button>
+                  <Button variant="ghost" onClick={() => requestSort('amount')}>
+                    Amount <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
                 </TableHead>
                 <TableHead className="text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredTransactions.length > 0 ? paginatedTransactions.map((tx) => (
+              {paginatedTransactions.length > 0 ? paginatedTransactions.map((tx) => (
                 <TableRow key={tx.id}>
                   <TableCell>{new Date(tx.date).toLocaleDateString()}</TableCell>
                   <TableCell className="font-medium">{tx.description || '-'}</TableCell>
@@ -231,46 +218,49 @@ export default function TransactionsPage() {
               )}
             </TableBody>
             <TableFooter>
-                <TableRow>
-                    <TableCell colSpan="3" className="font-bold">Total Income (Filtered)</TableCell>
-                    <TableCell className="text-right font-bold text-green-600">
-                    {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(summary.totalIncome)}
-                    </TableCell>
-                    <TableCell />
-                </TableRow>
-                <TableRow>
-                    <TableCell colSpan="3" className="font-bold">Total Expense (Filtered)</TableCell>
-                    <TableCell className="text-right font-bold text-red-600">
-                    {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(summary.totalExpense)}
-                    </TableCell>
-                    <TableCell />
-                </TableRow>
+              <TableRow>
+                <TableCell colSpan="3" className="font-bold">Total Income (Filtered)</TableCell>
+                <TableCell className="text-right font-bold text-green-600">
+                  {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(summary.totalIncome)}
+                </TableCell>
+                <TableCell />
+              </TableRow>
+              <TableRow>
+                <TableCell colSpan="3" className="font-bold">Total Expense (Filtered)</TableCell>
+                <TableCell className="text-right font-bold text-red-600">
+                  {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(summary.totalExpense)}
+                </TableCell>
+                <TableCell />
+              </TableRow>
             </TableFooter>
           </Table>
-            <div className="flex items-center justify-end space-x-2 py-4">
-                <span className="text-sm text-muted-foreground">
-                    Page {currentPage} of {Math.ceil(filteredTransactions.length / ITEMS_PER_PAGE)}
-                </span>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                >
-                    Previous
-                </Button>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(prev => prev + 1)}
-                    disabled={currentPage * ITEMS_PER_PAGE >= filteredTransactions.length}
-                >
-                    Next
-                </Button>
-            </div>
+          
+          {/* Kontrol Pagination */}
+          <div className="flex items-center justify-end space-x-2 py-4">
+            <span className="text-sm text-muted-foreground">
+              Page {currentPage} of {Math.ceil(processedData.length / ITEMS_PER_PAGE)}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => prev + 1)}
+              disabled={currentPage * ITEMS_PER_PAGE >= processedData.length}
+            >
+              Next
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
+      {/* Modal dan Dialog */}
       <Modal isOpen={isModalOpen} onClose={closeModal} title={editingTransaction ? "Edit Transaction" : "Add New Transaction"}>
         <TransactionForm
           onSubmit={handleSaveTransaction}

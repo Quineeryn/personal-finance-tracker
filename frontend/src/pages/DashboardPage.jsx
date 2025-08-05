@@ -59,8 +59,7 @@ export default function DashboardPage() {
         const txDate = new Date(tx.date);
         txDate.setHours(0, 0, 0, 0);
         return txDate.getTime() === today.getTime();
-      })
-      .slice(0, 5);
+      });
   }, [transactions]);
 
   const budgetProgress = useMemo(() => {
@@ -173,7 +172,7 @@ export default function DashboardPage() {
 
         {/* Kolom samping untuk Budget dan Chart */}
         <div className="lg:col-span-2">
-          <div className="grid gap-8 grid-rows-2 h-[520px]">
+          <div className="space-y-8 lg:col-span-2">
             {/* Budget Status */}
             <Card className="flex flex-col">
               <CardHeader>

@@ -15,14 +15,6 @@ export default function ExpensePieChart({ transactions = [] }) {
 
     const labels = Object.keys(expenseByCategory);
     const data = Object.values(expenseByCategory);
-    
-    const options = {
-      plugins: {
-        legend: {
-          position: 'right',
-        },
-      },
-    };
 
     return {
       labels,
@@ -37,6 +29,14 @@ export default function ExpensePieChart({ transactions = [] }) {
       ],
     };
   }, [transactions]);
+
+  const options = {
+      plugins: {
+        legend: {
+          position: 'right',
+        },
+      },
+    };
 
   return <Pie data={chartData} options={options} />;
 }

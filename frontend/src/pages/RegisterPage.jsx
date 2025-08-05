@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import AuthService from '../api/auth.service';
+import AuthService from '../api/authService';
 
 // Import komponen Shadcn/UI
 import { Button } from '@/components/ui/button';

@@ -1,11 +1,12 @@
 import { useMemo } from 'react';
 import { Pie } from 'react-chartjs-2';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, plugins } from 'chart.js';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 export default function ExpensePieChart({ transactions = [] }) {
   const chartData = useMemo(() => {
+    // Logika untuk memproses data tetap sama
     const expenseByCategory = transactions
       .filter(tx => tx.type === 'expense')
       .reduce((acc, tx) => {
@@ -22,21 +23,30 @@ export default function ExpensePieChart({ transactions = [] }) {
         {
           label: 'Expenses by Category',
           data,
-          backgroundColor: [
-            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
-          ],
+          backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'],
         },
       ],
     };
   }, [transactions]);
-
+  
   const options = {
-      plugins: {
-        legend: {
-          position: 'bottom',
-        },
+    plugins: {
+      legend: {
+        position: 'bottom',
       },
-    };
+    },
+  };
+
+  // --- TAMBAHAN LOGIKA DI SINI ---
+  // Cek jika tidak ada data pengeluaran sama sekali
+  if (chartData.datasets[0].data.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64 text-center text-gray-500">
+        <p>Anda belum memiliki transaksi pengeluaran hari ini. 😊</p>
+      </div>
+    );
+  }
+  // --- AKHIR TAMBAHAN ---
 
   return <Pie data={chartData} options={options} />;
 }

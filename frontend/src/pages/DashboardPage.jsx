@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
+import { useMemo } from 'react';
 
 export default function DashboardPage() {
   const [transactions, setTransactions] = useState([]);
@@ -45,6 +46,32 @@ export default function DashboardPage() {
       return txDate.getTime() === today.getTime();
     });
     setFilteredTransactions(todayTransaction);
+  }, [transactions]);
+
+  const monthlyStats = useMemo(() => {
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  const relevantTransactions = transactions.filter(tx => {
+    const txDate = new Date(tx.date);
+    return txDate.getMonth() === currentMonth && txDate.getFullYear() === currentYear;
+  });
+
+  const income = relevantTransactions
+    .filter(tx => tx.type === 'income')
+    .reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
+
+  const expense = relevantTransactions
+    .filter(tx => tx.type === 'expense')
+    .reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
+
+  return {
+    income,
+    expense,
+    balance: income - expense,
+    totalTransactions: relevantTransactions.length
+  };
   }, [transactions]);
 
   const handleEditClick = (transactions) => {
@@ -100,13 +127,57 @@ export default function DashboardPage() {
         </div>
       </header>
 
+    <div className="container grid gap-4 px-4 py-6 mx-auto md:grid-cols-2 lg:grid-cols-4">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+          <CardTitle className="text-sm font-medium">This Month's Balance</CardTitle>
+          {/* Anda bisa menambahkan ikon di sini nanti */}
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">
+            {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(monthlyStats.balance)}
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+          <CardTitle className="text-sm font-medium">This Month's Income</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold text-green-600">
+            {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(monthlyStats.income)}
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+          <CardTitle className="text-sm font-medium">This Month's Expense</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold text-red-600">
+            {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(monthlyStats.expense)}
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+          <CardTitle className="text-sm font-medium">Total Transactions (Month)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">
+            {monthlyStats.totalTransactions}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+
       <main className="container grid gap-8 px-4 pb-8 mx-auto md:grid-cols-3">
         <div className="md:col-span-2">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>Today's Transactions</CardTitle>
-                <CardDescription>Your income and expenses fod today.</CardDescription>
+                <CardDescription>Your income and expenses for today.</CardDescription>
               </div>
               <Button onClick={() => { setEditingTransaction(null); setIsModalOpen(true); }}>
                 Add Transaction
@@ -170,7 +241,7 @@ export default function DashboardPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setDeleteAlert({ isOpen: false, transactionId: null })}>
+            <AlertDialogCancel onClick={() => setDeleteALert({ isOpen: false, transactionId: null })}>
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete}>Continue</AlertDialogAction>

@@ -5,7 +5,7 @@ import RegisterPage from './pages/RegisterPage';
 import BudgetsPage from './pages/BudgetsPage'; // <-- Import
 import ProtectedRoute from './components/common/ProtectedRoutes';
 import Layout from './components/layout/Layout';
-import TransactionsPage from './pages/TransactionsPage'; // <-- Import
+import TransactionsPage from './pages/TransactionsPage';
 
 function App() {
   return (

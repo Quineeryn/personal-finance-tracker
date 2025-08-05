@@ -3,7 +3,7 @@ import { AuthContext } from '../context/AuthContext';
 import TransactionService from '../api/transactionService';
 import Modal from '../components/common/Modal';
 import TransactionForm from '../components/transactions/transactionForm';
-
+import { TableFooter } from "@/components/ui/table";
 // Shadcn UI Components
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,6 +25,9 @@ export default function TransactionsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [deleteAlert, setDeleteAlert] = useState({ isOpen: false, transactionId: null });
+  const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' }); // Default urutkan berdasarkan tanggal terbaru
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10
   
   const { token } = useContext(AuthContext);
 
@@ -42,9 +45,27 @@ export default function TransactionsPage() {
     return Array.from(categories);
   }, [transactions]);
 
+  const paginatedTransactions = useMemo(() => {
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  return filteredTransactions.slice(startIndex, endIndex);
+  }, [filteredTransactions, currentPage]);
+
   // Logika untuk memfilter transaksi
   const filteredTransactions = useMemo(() => {
-    return transactions.filter(tx => {
+    let sortableItems = [...transactions];
+
+    sortableItems.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+        return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+        return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+    });
+    
+    return sortableItems.filter(tx => {
       const transactionDate = new Date(tx.date);
       transactionDate.setHours(0, 0, 0, 0);
 
@@ -66,7 +87,7 @@ export default function TransactionsPage() {
       
       return true;
     });
-  }, [transactions, typeFilter, categoryFilter, dateRange]);
+  }, [transactions, typeFilter, categoryFilter, dateRange, sortConfig]);
   
   // --- Handler Functions (closeModal, handleSaveTransaction, dll.) ---
   const closeModal = () => {
@@ -112,6 +133,25 @@ export default function TransactionsPage() {
     }
   };
 
+  const requestSort = (key) => {
+  let direction = 'asc';
+  if (sortConfig.key === key && sortConfig.direction === 'asc') {
+    direction = 'desc';
+  }
+  setSortConfig({ key, direction });
+  };
+
+  const summary = useMemo(() => {
+  const totalIncome = filteredTransactions
+    .filter(tx => tx.type === 'income')
+    .reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
+  
+  const totalExpense = filteredTransactions
+    .filter(tx => tx.type === 'expense')
+    .reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
+    
+  return { totalIncome, totalExpense };
+ }, [filteredTransactions]);
 
   return (
     <div className="space-y-8">
@@ -155,15 +195,23 @@ export default function TransactionsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Date</TableHead>
+                <TableHead>
+                <Button variant="ghost" onClick={() => requestSort('date')}>
+                    Date {sortConfig.key === 'date' ? (sortConfig.direction === 'asc' ? '🔼' : '🔽') : null}
+                </Button>
+                </TableHead>
                 <TableHead>Description</TableHead>
                 <TableHead>Category</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
+                <TableHead className="text-right">
+                <Button variant="ghost" onClick={() => requestSort('amount')}>
+                    Amount {sortConfig.key === 'amount' ? (sortConfig.direction === 'asc' ? '🔼' : '🔽') : null}
+                </Button>
+                </TableHead>
                 <TableHead className="text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredTransactions.length > 0 ? filteredTransactions.map((tx) => (
+              {filteredTransactions.length > 0 ? paginatedTransactions.map((tx) => (
                 <TableRow key={tx.id}>
                   <TableCell>{new Date(tx.date).toLocaleDateString()}</TableCell>
                   <TableCell className="font-medium">{tx.description || '-'}</TableCell>
@@ -182,7 +230,44 @@ export default function TransactionsPage() {
                 </TableRow>
               )}
             </TableBody>
+            <TableFooter>
+                <TableRow>
+                    <TableCell colSpan="3" className="font-bold">Total Income (Filtered)</TableCell>
+                    <TableCell className="text-right font-bold text-green-600">
+                    {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(summary.totalIncome)}
+                    </TableCell>
+                    <TableCell />
+                </TableRow>
+                <TableRow>
+                    <TableCell colSpan="3" className="font-bold">Total Expense (Filtered)</TableCell>
+                    <TableCell className="text-right font-bold text-red-600">
+                    {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(summary.totalExpense)}
+                    </TableCell>
+                    <TableCell />
+                </TableRow>
+            </TableFooter>
           </Table>
+            <div className="flex items-center justify-end space-x-2 py-4">
+                <span className="text-sm text-muted-foreground">
+                    Page {currentPage} of {Math.ceil(filteredTransactions.length / ITEMS_PER_PAGE)}
+                </span>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                >
+                    Previous
+                </Button>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => prev + 1)}
+                    disabled={currentPage * ITEMS_PER_PAGE >= filteredTransactions.length}
+                >
+                    Next
+                </Button>
+            </div>
         </CardContent>
       </Card>
 

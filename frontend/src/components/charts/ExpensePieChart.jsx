@@ -33,7 +33,7 @@ export default function ExpensePieChart({ transactions = [] }) {
   const options = {
       plugins: {
         legend: {
-          position: 'right',
+          position: 'bottom',
         },
       },
     };

@@ -148,19 +148,19 @@ export default function DashboardPage() {
           </Card>
         </div>
 
-        <div className="space-y-8 md:col-span-1">
+        <div className="w-full max-w-xs p-4 mx-auto mt-4 bg-white rounded-lg shadow">
           <Card>
             <CardHeader>
               <CardTitle>Expense Breakdown</CardTitle>
             </CardHeader>
             <CardContent>
-              <ExpensePieChart transactions={transactions} />
+              <ExpensePieChart transactions={filteredTransactions} />
             </CardContent>
           </Card>
         </div>
       </main>
 
-      <AlertDialog open={deleteAlert.isOpen} onOpenChange={(isOpen) => setDeleteAlert({ ...deleteAlert, isOpen })}>
+      <AlertDialog open={deleteAlert.isOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>

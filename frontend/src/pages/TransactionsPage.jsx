@@ -70,7 +70,7 @@ export default function TransactionsPage() {
   return (
     <div className="space-y-8">
       {error && <p className="text-red-500">{error}</p>}
-      <Card>
+      <Card className="flex flex-col h-[calc(100vh-10rem)]">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle>All Transactions</CardTitle>
@@ -80,9 +80,9 @@ export default function TransactionsPage() {
             Add Transaction
           </Button>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex-1 overflow-y-auto">
           <Table>
-            <TableHeader>
+            <TableHeader className="sticky top-0 z-10 bg-white">
               <TableRow>
                 <TableHead>Date</TableHead>
                 <TableHead>Description</TableHead>

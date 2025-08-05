@@ -24,7 +24,7 @@ export default function TransactionsPage() {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 10;
+  const ITEMS_PER_PAGE = 7;
 
   // State untuk modal & dialog
   const [isModalOpen, setIsModalOpen] = useState(false);

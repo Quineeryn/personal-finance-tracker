@@ -78,15 +78,14 @@ export default function DashboardPage() {
       .map(budget => ({ ...budget, spent: monthlyExpenses[budget.category] || 0 }));
   }, [transactions, budgets]);
 
-
   if (error) {
     return <p className="text-red-500">{error}</p>;
   }
 
   return (
-    <div className="space-y-8">
-      {/* Stat Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="h-full flex flex-col space-y-6 overflow-hidden">
+      {/* Stat Cards - Fixed height */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 flex-shrink-0">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-sm font-medium">This Month's Balance</CardTitle>
@@ -121,11 +120,12 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-5">
-        {/* Kolom utama untuk Transaksi Hari Ini */}
-        <div className="lg:col-span-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center">
+      {/* Main Content Grid - Flex grow to fill remaining space */}
+      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-5 flex-1 min-h-0">
+        {/* Today's Transactions - Left column */}
+        <div className="lg:col-span-3 flex flex-col min-h-0">
+          <Card className="flex flex-col h-full">
+            <CardHeader className="flex flex-row items-center flex-shrink-0">
               <div className="grid gap-2">
                 <CardTitle>Today's Transactions</CardTitle>
                 <CardDescription>
@@ -139,73 +139,82 @@ export default function DashboardPage() {
                 </Link>
               </Button>
             </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {todaysTransactions.length > 0 ? todaysTransactions.map((tx) => (
-                    <TableRow key={tx.id}>
-                      <TableCell className="font-medium">{tx.description || '-'}</TableCell>
-                      <TableCell>{tx.category}</TableCell>
-                      <TableCell className={`text-right font-semibold ${tx.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                        {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(tx.amount)}
-                      </TableCell>
-                    </TableRow>
-                  )) : (
+            <CardContent className="flex-1 overflow-hidden">
+              <div className="h-full overflow-y-auto scrollbar-hide">
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan="3" className="h-24 text-center">
-                        No transactions for today.
-                      </TableCell>
+                      <TableHead>Description</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {todaysTransactions.length > 0 ? todaysTransactions.map((tx) => (
+                      <TableRow key={tx.id}>
+                        <TableCell className="font-medium">{tx.description || '-'}</TableCell>
+                        <TableCell>{tx.category}</TableCell>
+                        <TableCell className={`text-right font-semibold ${tx.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                          {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(tx.amount)}
+                        </TableCell>
+                      </TableRow>
+                    )) : (
+                      <TableRow>
+                        <TableCell colSpan="3" className="h-24 text-center">
+                          No transactions for today.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Kolom samping untuk Budget dan Chart */}
-        <div className="lg:col-span-2">
-          <div className="space-y-8 lg:col-span-2">
-            {/* Budget Status */}
-            <Card className="flex flex-col">
-              <CardHeader>
-                <CardTitle>Budget Status (This Month)</CardTitle>
-              </CardHeader>
-              <CardContent className="flex-1 overflow-y-auto space-y-4 scrollbar-hide">
+        {/* Right column - Budget and Chart */}
+        <div className="lg:col-span-2 flex flex-col space-y-6 min-h-0">
+          {/* Budget Status - Fixed height with scrollable content */}
+          <Card className="flex flex-col flex-1">
+            <CardHeader className="flex-shrink-0">
+              <CardTitle>Budget Status (This Month)</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 overflow-hidden">
+              <div className="h-full overflow-y-auto pr-2 space-y-4" style={{
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+                WebkitScrollbar: { display: 'none' }
+              }}>
                 {budgetProgress.length > 0 ? budgetProgress.map(budget => (
-                  <BudgetStatus
-                    key={budget.id}
-                    category={budget.category}
-                    spent={budget.spent}
-                    total={parseFloat(budget.amount)}
-                  />
+                  <div key={budget.id} className="flex-shrink-0">
+                    <BudgetStatus
+                      category={budget.category}
+                      spent={budget.spent}
+                      total={parseFloat(budget.amount)}
+                    />
+                  </div>
                 )) : (
-                  <p className="text-sm text-center text-gray-500 h-full flex items-center justify-center">
-                    No budgets set for this month.
-                  </p>
+                  <div className="h-full flex items-center justify-center">
+                    <p className="text-sm text-center text-gray-500">
+                      No budgets set for this month.
+                    </p>
+                  </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </CardContent>
+          </Card>
 
-            {/* Expense Breakdown */}
-            <Card className="flex flex-col">
-              <CardHeader>
-                <CardTitle>Expense Breakdown (Today)</CardTitle>
-              </CardHeader>
-              <CardContent className="flex-1 flex items-center justify-center">
-                <div className="w-full max-w-[200px] h-full relative">
-                  <ExpensePieChart transactions={todaysTransactions} />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          {/* Expense Breakdown - Fixed height */}
+          <Card className="flex flex-col flex-1">
+            <CardHeader className="flex-shrink-0">
+              <CardTitle>Expense Breakdown (Today)</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 flex items-center justify-center min-h-0">
+              <div className="w-full max-w-[240px] h-full max-h-[240px] relative flex items-center justify-center">
+                <ExpensePieChart transactions={todaysTransactions} />
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

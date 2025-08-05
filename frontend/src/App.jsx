@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import DashboardPage from './pages/DashboardPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import BudgetsPage from './pages/BudgetsPage'; // <-- Importt
+import BudgetPage from './pages/BudgetPage'; // <-- Importt
 import ProtectedRoute from './components/common/ProtectedRoutes';
 import Layout from './components/layout/Layout';
 import TransactionsPage from './pages/TransactionsPage';
@@ -25,7 +25,7 @@ function App() {
         >
           <Route path="/" element={<DashboardPage />} />
           <Route path="/transactions" element={<TransactionsPage />} /> 
-          <Route path="/budgets" element={<BudgetsPage />} /> 
+          <Route path="/budgets" element={<BudgetPage />} /> 
           {/* Nanti kita akan tambahkan halaman lain di sini */}
         </Route>
       </Routes>

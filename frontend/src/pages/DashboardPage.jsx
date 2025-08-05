@@ -3,7 +3,7 @@ import { AuthContext } from '../context/AuthContext';
 import TransactionService from '../api/transactionService';
 import BudgetService from '../api/budgetService';
 import ExpensePieChart from '../components/charts/ExpensePieChart';
-import BudgetStatus from '../components/budgets/BudgetStatus';
+import BudgetStatus from '../components/budgets/budgetStatus';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function DashboardPage() {

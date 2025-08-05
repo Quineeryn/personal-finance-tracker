@@ -182,30 +182,33 @@ export default function TransactionsPage() {
         </div>
 
         {/* Table Container - Flexible height with internal scroll */}
-        <CardContent className="flex-1 flex flex-col px-6 pb-0 min-h-0">
-          <div className="flex-1 border rounded-md overflow-hidden">
-            <Table>
-              <TableHeader className="sticky top-0 z-10 bg-white">
-                <TableRow>
-                  <TableHead>
-                    <Button variant="ghost" onClick={() => requestSort('date')}>
-                      Date <ArrowUpDown className="ml-2 h-4 w-4" />
-                    </Button>
-                  </TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead className="text-right">
-                    <Button variant="ghost" onClick={() => requestSort('amount')}>
-                      Amount <ArrowUpDown className="ml-2 h-4 w-4" />
-                    </Button>
-                  </TableHead>
-                  <TableHead className="text-center">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-            </Table>
+        <CardContent className="flex-1 px-6 pb-0 min-h-0 overflow-hidden">
+          <div className="h-full flex flex-col border rounded-md">
+            {/* Table Header - Fixed */}
+            <div className="flex-shrink-0 border-b bg-white">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>
+                      <Button variant="ghost" onClick={() => requestSort('date')}>
+                        Date <ArrowUpDown className="ml-2 h-4 w-4" />
+                      </Button>
+                    </TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead className="text-right">
+                      <Button variant="ghost" onClick={() => requestSort('amount')}>
+                        Amount <ArrowUpDown className="ml-2 h-4 w-4" />
+                      </Button>
+                    </TableHead>
+                    <TableHead className="text-center">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+              </Table>
+            </div>
             
-            {/* Scrollable body */}
-            <div className="overflow-y-auto flex-1" style={{ maxHeight: 'calc(100vh - 420px)' }}>
+            {/* Scrollable Table Body - Flexible */}
+            <div className="flex-1 overflow-y-auto min-h-0">
               <Table>
                 <TableBody>
                   {paginatedTransactions.length > 0 ? paginatedTransactions.map((tx) => (
@@ -230,8 +233,8 @@ export default function TransactionsPage() {
               </Table>
             </div>
 
-            {/* Fixed Footer */}
-            <div className="border-t bg-gray-50">
+            {/* Table Footer - Fixed */}
+            <div className="flex-shrink-0 border-t bg-gray-50">
               <Table>
                 <TableFooter>
                   <TableRow>

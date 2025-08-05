@@ -79,6 +79,7 @@ export default function DashboardPage() {
       .map(budget => ({ ...budget, spent: monthlyExpenses[budget.category] || 0 }));
   }, [transactions, budgets]);
 
+
   if (error) {
     return <p className="text-red-500">{error}</p>;
   }
@@ -170,15 +171,15 @@ export default function DashboardPage() {
           </Card>
         </div>
 
-        {/* Kolom samping untuk Budget dan Chart - Berbagi space dalam satu kolom */}
+        {/* Kolom samping untuk Budget dan Chart */}
         <div className="lg:col-span-2">
-          <div className="grid gap-4 grid-rows-2 h-96">
-            {/* Budget Status - Setengah bagian atas dengan scroll */}
+          <div className="grid gap-8 grid-rows-2 h-[520px]">
+            {/* Budget Status */}
             <Card className="flex flex-col">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg">Budget Status (This Month)</CardTitle>
+              <CardHeader>
+                <CardTitle>Budget Status (This Month)</CardTitle>
               </CardHeader>
-              <CardContent className="flex-1 overflow-y-auto space-y-3 pr-2">
+              <CardContent className="flex-1 overflow-y-auto space-y-4 scrollbar-hide">
                 {budgetProgress.length > 0 ? budgetProgress.map(budget => (
                   <BudgetStatus
                     key={budget.id}
@@ -187,18 +188,20 @@ export default function DashboardPage() {
                     total={parseFloat(budget.amount)}
                   />
                 )) : (
-                  <p className="text-sm text-center text-gray-500 py-4">No budgets set for this month.</p>
+                  <p className="text-sm text-center text-gray-500 h-full flex items-center justify-center">
+                    No budgets set for this month.
+                  </p>
                 )}
               </CardContent>
             </Card>
 
-            {/* Expense Breakdown - Setengah bagian bawah */}
+            {/* Expense Breakdown */}
             <Card className="flex flex-col">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg">Expense Breakdown (Today)</CardTitle>
+              <CardHeader>
+                <CardTitle>Expense Breakdown (Today)</CardTitle>
               </CardHeader>
               <CardContent className="flex-1 flex items-center justify-center">
-                <div className="w-full max-w-[160px]">
+                <div className="w-full max-w-[200px] h-full relative">
                   <ExpensePieChart transactions={todaysTransactions} />
                 </div>
               </CardContent>

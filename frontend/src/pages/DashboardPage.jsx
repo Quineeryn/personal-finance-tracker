@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext, useMemo } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import TransactionService from '../api/transaction.service';
-import BudgetService from '../api/budget.service';
+import TransactionService from '../api/transactionService';
+import BudgetService from '../api/budgetService';
 import ExpensePieChart from '../components/charts/ExpensePieChart';
 import BudgetStatus from '../components/budgets/BudgetStatus';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

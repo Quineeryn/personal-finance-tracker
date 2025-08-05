@@ -5,6 +5,9 @@ import ExpensePieChart from '../components/charts/ExpensePieChart';
 import Modal from '../components/common/Modal'; 
 import TransactionForm from '../components/transactions/transactionForm'; 
 import { Button } from '@/components/ui/button';
+import BudgetService from '../api/budgetService';
+import BudgetStatus from '../components/budgets/budgetStatus';
+import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
@@ -12,6 +15,7 @@ import { useMemo } from 'react';
 
 export default function DashboardPage() {
   const [transactions, setTransactions] = useState([]);
+  const [budgets, setBudgets] = useState([]);
   const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false); 
   const { token, logout } = useContext(AuthContext);
@@ -73,6 +77,44 @@ export default function DashboardPage() {
     totalTransactions: relevantTransactions.length
   };
   }, [transactions]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (token) {
+        try {
+          // Ambil data transaksi dan anggaran secara bersamaan
+          const [transactionRes, budgetRes] = await Promise.all([
+            TransactionService.getTransactions(token),
+            BudgetService.getBudgets(token)
+          ]);
+          setTransactions(transactionRes.data);
+          setBudgets(budgetRes.data);
+        } catch (err) {
+          setError('Failed to fetch data.');
+        }
+      }
+    };
+    fetchData();
+  }, [token]);
+
+  const budgetProgress = useMemo(() => {
+    const now = new Date();
+    const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    const monthlyExpenses = transactions
+      .filter(tx => tx.type === 'expense' && tx.date.startsWith(currentMonthStr))
+      .reduce((acc, tx) => {
+        acc[tx.category] = (acc[tx.category] || 0) + parseFloat(tx.amount);
+        return acc;
+      }, {});
+    
+    return budgets
+      .filter(b => b.month === currentMonthStr)
+      .map(budget => ({
+        ...budget,
+        spent: monthlyExpenses[budget.category] || 0,
+      }));
+  }, [transactions, budgets]);
 
   const handleEditClick = (transactions) => {
     setEditingTransaction(transactions);
@@ -171,6 +213,8 @@ export default function DashboardPage() {
       </Card>
     </div>
 
+    
+
       <main className="container grid gap-8 px-4 pb-8 mx-auto md:grid-cols-3">
         <div className="md:col-span-2">
           <Card>
@@ -183,9 +227,10 @@ export default function DashboardPage() {
                 Add Transaction
               </Button>
             </CardHeader>
+            <div className="h-[500px] overflow-y-auto">
             <CardContent>
               <Table>
-                <TableHeader>
+                <TableHeader className="sticky top-0 bg-white">
                   <TableRow>
                     <TableHead>Date</TableHead>
                     <TableHead>Description</TableHead>
@@ -216,16 +261,35 @@ export default function DashboardPage() {
                 </TableBody>
               </Table>
             </CardContent>
+            </div>
           </Card>
         </div>
 
-        <div className="w-full max-w-xs p-4 mx-auto mt-4 bg-white rounded-lg shadow">
+        <div className="w-full max-w-s p-4 mx-auto mt-4 bg-white rounded-lg shadow">
           <Card>
             <CardHeader>
               <CardTitle>Expense Breakdown</CardTitle>
             </CardHeader>
             <CardContent>
               <ExpensePieChart transactions={filteredTransactions} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Budget Status (This Month)</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {budgetProgress.length > 0 ? budgetProgress.map(budget => (
+                <BudgetStatus
+                  key={budget.id}
+                  category={budget.category}
+                  spent={budget.spent}
+                  total={parseFloat(budget.amount)}
+                />
+              )) : (
+                <p className="text-sm text-center text-gray-500">No budgets set for this month.</p>
+              )}
             </CardContent>
           </Card>
         </div>

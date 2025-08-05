@@ -2,14 +2,17 @@ import { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import TransactionService from '../api/transactionService';
 import ExpensePieChart from '../components/charts/ExpensePieChart';
-import Modal from '../components/common/Modal'; // Step 5: Import Modal
-import TransactionForm from '../components/transactions/transactionForm'; // Step 5: Import TransactionForm
+import Modal from '../components/common/Modal'; 
+import TransactionForm from '../components/transactions/transactionForm'; 
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
 
 export default function DashboardPage() {
   const [transactions, setTransactions] = useState([]);
   const [error, setError] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false); // Step 3: State untuk modal
+  const [isModalOpen, setIsModalOpen] = useState(false); 
   const { token, logout } = useContext(AuthContext);
   const [editingTransaction, setEditingTransaction] = useState(null);
 
@@ -67,53 +70,75 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="container p-4 mx-auto md:p-8">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+    <div className="min-h-screen bg-gray-50">
+      <header className="container flex items-center justify-between p-4 mx-auto">
         <h1 className="text-3xl font-bold">Dashboard</h1>
         <div className="flex items-center gap-4">
-            {/* Step 3: Tombol "Tambah Transaksi" */}
-            <Button onClick={() => { setEditingTransaction(null); setIsModalOpen(true); }}>
-                Add Transaction
-            </Button>
-            <Button variant="destructive" onClick={logout}>
-                Logout
-            </Button>
+          <Button onClick={() => { setEditingTransaction(null); setIsModalOpen(true); }}>
+            Add Transaction
+          </Button>
+          <Button variant="destructive" onClick={logout}>
+            Logout
+          </Button>
         </div>
-      </div>
+      </header>
 
-      {error && <p className="mt-4 text-red-500">{error}</p>}
-
-      <div className="mt-8">
-        <h2 className="text-2xl font-semibold">Expense Breakdown</h2>
-        <div className="w-full max-w-md p-4 mx-auto mt-4 bg-white rounded-lg shadow">
-          <ExpensePieChart transactions={transactions} />
+      <main className="container grid gap-8 px-4 pb-8 mx-auto md:grid-cols-3">
+        <div className="md:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Transactions</CardTitle>
+              <CardDescription>A list of your recent income and expenses.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead className="text-center">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {transactions.length > 0 ? transactions.map((tx) => (
+                    <TableRow key={tx.id}>
+                      <TableCell>{new Date(tx.date).toLocaleDateString()}</TableCell>
+                      <TableCell className="font-medium">{tx.description || '-'}</TableCell>
+                      <TableCell>{tx.category}</TableCell>
+                      <TableCell className={`text-right font-semibold ${tx.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                        {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(tx.amount)}
+                      </TableCell>
+                      <TableCell className="flex justify-center gap-2">
+                        <Button variant="outline" size="sm" onClick={() => handleEditClick(tx)}>Edit</Button>
+                        <Button variant="destructive" size="sm" onClick={() => handleDeleteClick(tx.id)}>Hapus</Button>
+                      </TableCell>
+                    </TableRow>
+                  )) : (
+                    <TableRow>
+                      <TableCell colSpan="5" className="text-center">No transactions yet.</TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
         </div>
-      </div>
-      
-      <div className="mt-8">
-        <h2 className="text-2xl font-semibold">Recent Transactions</h2>
-        <ul className="mt-4 space-y-3">
-          {transactions.map((tx) => (
-            <li key={tx.id} className="flex items-center justify-between p-4 bg-white rounded-lg shadow">
-              <div>
-                <p className="font-medium">{tx.description || tx.category}</p>
-                <p className="text-sm text-gray-500">{tx.category} - {new Date(tx.date).toLocaleDateString()}</p>
-              </div>
-              <p className={`font-semibold ${tx.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(tx.amount)}
-              </p>
-              <Button variant="outline" onClick={() => handleEditClick(tx)}>Edit</Button>
-              <Button variant="destructive" onClick={() => handleDeleteClick(tx.id)}>Delete</Button>
-            </li>
-          ))}
-          {transactions.length === 0 && (
-            <p className="text-gray-500">No transactions yet. Add one to get started!</p>
-          )}
-        </ul>
-      </div>
 
-      {/* Step 5: Tampilkan Modal & Form */}
-      <Modal isOpen={isModalOpen} onClose={closeModal} title={editingTransaction ? "Edit Transaction" : "Add Transaction"}>
+        <div className="space-y-8 md:col-span-1">
+          <Card>
+            <CardHeader>
+              <CardTitle>Expense Breakdown</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ExpensePieChart transactions={transactions} />
+            </CardContent>
+          </Card>
+        </div>
+      </main>
+
+      <Modal isOpen={isModalOpen} onClose={closeModal} title={editingTransaction ? "Edit Transaction" : "Add New Transaction"}>
         <TransactionForm
           onSubmit={handleSaveTransaction}
           onCancel={closeModal}

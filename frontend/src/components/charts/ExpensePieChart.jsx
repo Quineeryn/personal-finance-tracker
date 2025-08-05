@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Pie } from 'react-chartjs-2';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, plugins } from 'chart.js';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -15,6 +15,14 @@ export default function ExpensePieChart({ transactions = [] }) {
 
     const labels = Object.keys(expenseByCategory);
     const data = Object.values(expenseByCategory);
+    
+    const options = {
+      plugins: {
+        legend: {
+          position: 'right',
+        },
+      },
+    };
 
     return {
       labels,
@@ -30,5 +38,5 @@ export default function ExpensePieChart({ transactions = [] }) {
     };
   }, [transactions]);
 
-  return <Pie data={chartData} />;
+  return <Pie data={chartData} options={options} />;
 }

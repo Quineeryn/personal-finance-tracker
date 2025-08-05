@@ -7,7 +7,7 @@ import TransactionForm from '../components/transactions/transactionForm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 
 export default function DashboardPage() {
   const [transactions, setTransactions] = useState([]);
@@ -15,6 +15,8 @@ export default function DashboardPage() {
   const [isModalOpen, setIsModalOpen] = useState(false); 
   const { token, logout } = useContext(AuthContext);
   const [editingTransaction, setEditingTransaction] = useState(null);
+  const [deleteAlert, setDeleteALert] = useState({ isOpen: false, transactionId: null});
+  const [filteredTransactions, setFilteredTransactions] = useState([]);
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -26,28 +28,46 @@ export default function DashboardPage() {
         console.error(err);
       }
     };
-
+    
     if (token) {
       fetchTransactions();
     }
   }, [token]);
+
+  useEffect(() => {
+    const today = new Date();
+
+    today.setHours(0,0,0,0);
+
+    const todayTransaction = transactions.filter(tx =>{
+      const txDate = new Date(tx.date);
+      txDate.setHours(0,0,0,0);
+      return txDate.getTime() === today.getTime();
+    });
+    setFilteredTransactions(todayTransaction);
+  }, [transactions]);
 
   const handleEditClick = (transactions) => {
     setEditingTransaction(transactions);
     setIsModalOpen(true);
   };
 
-  const handleDeleteClick = async (id) => {
-    if(window.confirm("Are you sure you want to delete this transaction?")) {
+  const handleDeleteClick = (id) => {
+    setDeleteALert({ isOpen: true, transactionId: id});
+  }
+
+  const confirmDelete = async () => {
+    if (deleteAlert.transactionId) {
       try{
-        await TransactionService.deleteTransaction(token, id);
-        setTransactions(transactions.filter(tx => tx.id !== id));
+        await TransactionService.deleteTransaction(token, deleteAlert.transactionId);
+        setTransactions(transactions.filter(tx => tx.id !== deleteAlert.transactionId));
       } catch (err) {
-        console.error("Delete Failed:", err.response || err);
         alert("Failed to delete transaction.");
+      }finally {
+        setDeleteALert({ isOpen: false, transactionId: null});
       }
     }
-  };
+  }
 
   const handleSaveTransaction = async (formData) => {
     try{
@@ -74,9 +94,6 @@ export default function DashboardPage() {
       <header className="container flex items-center justify-between p-4 mx-auto">
         <h1 className="text-3xl font-bold">Dashboard</h1>
         <div className="flex items-center gap-4">
-          <Button onClick={() => { setEditingTransaction(null); setIsModalOpen(true); }}>
-            Add Transaction
-          </Button>
           <Button variant="destructive" onClick={logout}>
             Logout
           </Button>
@@ -86,9 +103,14 @@ export default function DashboardPage() {
       <main className="container grid gap-8 px-4 pb-8 mx-auto md:grid-cols-3">
         <div className="md:col-span-2">
           <Card>
-            <CardHeader>
-              <CardTitle>Recent Transactions</CardTitle>
-              <CardDescription>A list of your recent income and expenses.</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Today's Transactions</CardTitle>
+                <CardDescription>Your income and expenses fod today.</CardDescription>
+              </div>
+              <Button onClick={() => { setEditingTransaction(null); setIsModalOpen(true); }}>
+                Add Transaction
+              </Button>
             </CardHeader>
             <CardContent>
               <Table>
@@ -102,7 +124,7 @@ export default function DashboardPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {transactions.length > 0 ? transactions.map((tx) => (
+                  {filteredTransactions.length > 0 ? filteredTransactions.map((tx) => (
                     <TableRow key={tx.id}>
                       <TableCell>{new Date(tx.date).toLocaleDateString()}</TableCell>
                       <TableCell className="font-medium">{tx.description || '-'}</TableCell>
@@ -117,7 +139,7 @@ export default function DashboardPage() {
                     </TableRow>
                   )) : (
                     <TableRow>
-                      <TableCell colSpan="5" className="text-center">No transactions yet.</TableCell>
+                      <TableCell colSpan="5" className="text-center">No transactions for today.</TableCell>
                     </TableRow>
                   )}
                 </TableBody>
@@ -137,6 +159,24 @@ export default function DashboardPage() {
           </Card>
         </div>
       </main>
+
+      <AlertDialog open={deleteAlert.isOpen} onOpenChange={(isOpen) => setDeleteAlert({ ...deleteAlert, isOpen })}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your
+              transaction record.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteAlert({ isOpen: false, transactionId: null })}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>Continue</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Modal isOpen={isModalOpen} onClose={closeModal} title={editingTransaction ? "Edit Transaction" : "Add New Transaction"}>
         <TransactionForm

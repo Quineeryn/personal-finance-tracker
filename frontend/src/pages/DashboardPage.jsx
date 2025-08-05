@@ -170,35 +170,40 @@ export default function DashboardPage() {
           </Card>
         </div>
 
-        {/* Kolom samping untuk Budget dan Chart */}
-        <div className="space-y-8 lg:col-span-2">
-          <Card className="flex flex-col h-96">
-            <CardHeader>
-              <CardTitle>Budget Status (This Month)</CardTitle>
-            </CardHeader>
-            <CardContent className="flex-1 overflow-y-auto space-y-4">
-              {budgetProgress.length > 0 ? budgetProgress.map(budget => (
-                <BudgetStatus
-                  key={budget.id}
-                  category={budget.category}
-                  spent={budget.spent}
-                  total={parseFloat(budget.amount)}
-                />
-              )) : (
-                <p className="text-sm text-center text-gray-500">No budgets set for this month.</p>
-              )}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Expense Breakdown (Today)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="w-full max-w-xs p-4 mx-auto">
-                <ExpensePieChart transactions={todaysTransactions} />
-              </div>
-            </CardContent>
-          </Card>
+        {/* Kolom samping untuk Budget dan Chart - Berbagi space dalam satu kolom */}
+        <div className="lg:col-span-2">
+          <div className="grid gap-4 grid-rows-2 h-96">
+            {/* Budget Status - Setengah bagian atas dengan scroll */}
+            <Card className="flex flex-col">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">Budget Status (This Month)</CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1 overflow-y-auto space-y-3 pr-2">
+                {budgetProgress.length > 0 ? budgetProgress.map(budget => (
+                  <BudgetStatus
+                    key={budget.id}
+                    category={budget.category}
+                    spent={budget.spent}
+                    total={parseFloat(budget.amount)}
+                  />
+                )) : (
+                  <p className="text-sm text-center text-gray-500 py-4">No budgets set for this month.</p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Expense Breakdown - Setengah bagian bawah */}
+            <Card className="flex flex-col">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">Expense Breakdown (Today)</CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1 flex items-center justify-center">
+                <div className="w-full max-w-[160px]">
+                  <ExpensePieChart transactions={todaysTransactions} />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>

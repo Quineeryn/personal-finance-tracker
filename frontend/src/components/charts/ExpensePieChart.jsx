@@ -30,6 +30,7 @@ export default function ExpensePieChart({ transactions = [] }) {
   }, [transactions]);
   
   const options = {
+     maintainAspectRatio: false,
     plugins: {
       legend: {
         position: 'bottom',

@@ -33,7 +33,7 @@ export default function ExpensePieChart({ transactions = [] }) {
      maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'bottom',
+        position: 'right',
       },
     },
   };
@@ -49,5 +49,7 @@ export default function ExpensePieChart({ transactions = [] }) {
   }
   // --- AKHIR TAMBAHAN ---
 
-  return <Pie data={chartData} options={options} />;
+  return(
+     <Pie data={chartData} options={options} />
+  );
 }

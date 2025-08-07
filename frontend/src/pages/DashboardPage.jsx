@@ -171,19 +171,19 @@ export default function DashboardPage() {
         </div>
 
         {/* Right Column */}
-        <div className="lg:col-span-2 flex flex-col gap-6 h-full">
+        <div className="lg:col-span-2 flex flex-col gap-6 h-full min-h-0">
           {/* Budget Status */}
           <Card className="flex flex-col h-[50%]">
             <CardHeader className="flex-shrink-0">
               <CardTitle>Budget Status (This Month)</CardTitle>
             </CardHeader>
-            <CardContent className="flex-1 overflow-y-auto scrollbar-thin">
+            <CardContent className="flex-1 overflow-y-auto scrollbar-hide pr-1">
               <div
                 className="space-y-4"
                 style={{ maxHeight: 'calc(100% - 40px)' }}
               >
                 {budgetProgress.length > 0 ? (
-                  budgetProgress.slice(0, 4).map((budget) => (
+                  budgetProgress.map((budget) => (
                     <div
                       key={budget.id}
                       className="flex-shrink-0"
@@ -207,13 +207,13 @@ export default function DashboardPage() {
           </Card>
 
           {/* Expense Breakdown */}
-          <Card className="flex flex-col h-[50%]">
-            <CardHeader className="flex-shrink-0">
+          <Card className="flex flex-col flex-1 overflow-hidden">
+            <CardHeader>
               <CardTitle>Expense Breakdown (Today)</CardTitle>
             </CardHeader>
-            <CardContent className="flex-1 flex items-center justify-center">
-              <div className="w-[300px] h-[300px] relative flex items-center justify-center">
-                <ExpensePieChart transactions={todaysTransactions} />
+            <CardContent className="flex-1 overflow-hidden p-0">
+              <div className="h-full p-6">
+                <ExpensePieChart transactions={todaysTransactions}/>
               </div>
             </CardContent>
           </Card>

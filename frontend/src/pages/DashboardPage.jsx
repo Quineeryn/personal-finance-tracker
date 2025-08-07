@@ -1,125 +1,223 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import TransactionService from '../api/transactionService';
+import BudgetService from '../api/budgetService';
 import ExpensePieChart from '../components/charts/ExpensePieChart';
-import Modal from '../components/common/Modal'; // Step 5: Import Modal
-import TransactionForm from '../components/transactions/transactionForm'; // Step 5: Import TransactionForm
+import BudgetStatus from '../components/budgets/budgetStatus';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ArrowUpRight } from 'lucide-react';
 
 export default function DashboardPage() {
   const [transactions, setTransactions] = useState([]);
+  const [budgets, setBudgets] = useState([]);
   const [error, setError] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false); // Step 3: State untuk modal
-  const { token, logout } = useContext(AuthContext);
-  const [editingTransaction, setEditingTransaction] = useState(null);
+  const { token } = useContext(AuthContext);
 
   useEffect(() => {
-    const fetchTransactions = async () => {
-      try {
-        const response = await TransactionService.getTransactions(token);
-        setTransactions(response.data);
-      } catch (err) {
-        setError('Failed to fetch transactions.');
-        console.error(err);
+    const fetchData = async () => {
+      if (token) {
+        try {
+          const [transactionRes, budgetRes] = await Promise.all([
+            TransactionService.getTransactions(token),
+            BudgetService.getBudgets(token)
+          ]);
+          setTransactions(transactionRes.data);
+          setBudgets(budgetRes.data);
+        } catch (err) {
+          setError('Failed to fetch dashboard data.');
+        }
       }
     };
-
-    if (token) {
-      fetchTransactions();
-    }
+    fetchData();
   }, [token]);
 
-  const handleEditClick = (transactions) => {
-    setEditingTransaction(transactions);
-    setIsModalOpen(true);
-  };
+  const monthlyStats = useMemo(() => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
 
-  const handleDeleteClick = async (id) => {
-    if(window.confirm("Are you sure you want to delete this transaction?")) {
-      try{
-        await TransactionService.deleteTransaction(token, id);
-        setTransactions(transactions.filter(tx => tx.id !== id));
-      } catch (err) {
-        console.error("Delete Failed:", err.response || err);
-        alert("Failed to delete transaction.");
-      }
-    }
-  };
+    const relevantTransactions = transactions.filter(tx => {
+      const txDate = new Date(tx.date);
+      return txDate.getMonth() === currentMonth && txDate.getFullYear() === currentYear;
+    });
 
-  const handleSaveTransaction = async (formData) => {
-    try{
-      if (editingTransaction) {
-        const response = await TransactionService.updateTransaction(token, editingTransaction.id, formData);
-        setTransactions(transactions.map(tx => tx.id === editingTransaction.id ? response.data : tx));
-      } else{
-        const response = await TransactionService.createTransaction(token, formData);
-        setTransactions([...transactions, response.data]);
-      }
-      closeModal();
-    } catch (err) {
-      alert("Failed to save transaction.")
-    }
-  };
+    const income = relevantTransactions.filter(tx => tx.type === 'income').reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
+    const expense = relevantTransactions.filter(tx => tx.type === 'expense').reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
+    
+    return { income, expense, balance: income - expense, totalTransactions: relevantTransactions.length };
+  }, [transactions]);
 
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setEditingTransaction(null);
+  const todaysTransactions = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return transactions
+      .filter(tx => {
+        const txDate = new Date(tx.date);
+        txDate.setHours(0, 0, 0, 0);
+        return txDate.getTime() === today.getTime();
+      });
+  }, [transactions]);
+
+  const budgetProgress = useMemo(() => {
+    const now = new Date();
+    const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    const monthlyExpenses = transactions
+      .filter(tx => tx.type === 'expense' && tx.date.startsWith(currentMonthStr))
+      .reduce((acc, tx) => {
+        acc[tx.category] = (acc[tx.category] || 0) + parseFloat(tx.amount);
+        return acc;
+      }, {});
+    
+    return budgets
+      .filter(b => b.month === currentMonthStr)
+      .map(budget => ({ ...budget, spent: monthlyExpenses[budget.category] || 0 }));
+  }, [transactions, budgets]);
+
+  if (error) {
+    return <p className="text-red-500">{error}</p>;
   }
 
   return (
-    <div className="container p-4 mx-auto md:p-8">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <div className="flex items-center gap-4">
-            {/* Step 3: Tombol "Tambah Transaksi" */}
-            <Button onClick={() => { setEditingTransaction(null); setIsModalOpen(true); }}>
-                Add Transaction
-            </Button>
-            <Button variant="destructive" onClick={logout}>
-                Logout
-            </Button>
-        </div>
+    <div className="h-full flex flex-col space-y-6 overflow-hidden">
+      {/* Stat Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 flex-shrink-0">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">This Month's Balance</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(monthlyStats.balance)}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">This Month's Income</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(monthlyStats.income)}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">This Month's Expense</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(monthlyStats.expense)}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">Total Transactions (Month)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{monthlyStats.totalTransactions}</div>
+          </CardContent>
+        </Card>
       </div>
 
-      {error && <p className="mt-4 text-red-500">{error}</p>}
-
-      <div className="mt-8">
-        <h2 className="text-2xl font-semibold">Expense Breakdown</h2>
-        <div className="w-full max-w-md p-4 mx-auto mt-4 bg-white rounded-lg shadow">
-          <ExpensePieChart transactions={transactions} />
-        </div>
-      </div>
-      
-      <div className="mt-8">
-        <h2 className="text-2xl font-semibold">Recent Transactions</h2>
-        <ul className="mt-4 space-y-3">
-          {transactions.map((tx) => (
-            <li key={tx.id} className="flex items-center justify-between p-4 bg-white rounded-lg shadow">
-              <div>
-                <p className="font-medium">{tx.description || tx.category}</p>
-                <p className="text-sm text-gray-500">{tx.category} - {new Date(tx.date).toLocaleDateString()}</p>
+      {/* Main Content */}
+      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-5 flex-1 min-h-0">
+        {/* Today's Transactions */}
+        <div className="lg:col-span-3 flex flex-col min-h-0">
+          <Card className="flex flex-col h-full max-h-[calc(100vh-200px)]">
+            <CardHeader className="flex flex-row items-center flex-shrink-0">
+              <div className="grid gap-2">
+                <CardTitle>Today's Transactions</CardTitle>
+                <CardDescription>Your latest transactions for today.</CardDescription>
               </div>
-              <p className={`font-semibold ${tx.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(tx.amount)}
-              </p>
-              <Button variant="outline" onClick={() => handleEditClick(tx)}>Edit</Button>
-              <Button variant="destructive" onClick={() => handleDeleteClick(tx.id)}>Delete</Button>
-            </li>
-          ))}
-          {transactions.length === 0 && (
-            <p className="text-gray-500">No transactions yet. Add one to get started!</p>
-          )}
-        </ul>
-      </div>
+              <Button asChild size="sm" className="ml-auto gap-1">
+                <Link to="/transactions">
+                  View All
+                  <ArrowUpRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            </CardHeader>
+            <CardContent className="flex-1 overflow-hidden">
+              <div className="h-full overflow-y-auto scrollbar-hide">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Description</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {todaysTransactions.length > 0 ? todaysTransactions.map((tx) => (
+                      <TableRow key={tx.id}>
+                        <TableCell className="font-medium">{tx.description || '-'}</TableCell>
+                        <TableCell>{tx.category}</TableCell>
+                        <TableCell className={`text-right font-semibold ${tx.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                          {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(tx.amount)}
+                        </TableCell>
+                      </TableRow>
+                    )) : (
+                      <TableRow>
+                        <TableCell colSpan="3" className="h-24 text-center">
+                          No transactions for today.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* Step 5: Tampilkan Modal & Form */}
-      <Modal isOpen={isModalOpen} onClose={closeModal} title={editingTransaction ? "Edit Transaction" : "Add Transaction"}>
-        <TransactionForm
-          onSubmit={handleSaveTransaction}
-          onCancel={closeModal}
-          initialData={editingTransaction || {}}
-        />
-      </Modal>
+        {/* Right Column */}
+        <div className="lg:col-span-2 flex flex-col gap-6 h-[calc(100vh-200px)]">
+          {/* Budget Status */}
+          <Card className="flex flex-col h-[320px]">
+            <CardHeader className="flex-shrink-0">
+              <CardTitle>Budget Status (This Month)</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 overflow-hidden">
+              <div
+                className="space-y-4 overflow-y-auto scrollbar-hide"
+                style={{ maxHeight: 'calc(100%'}}
+              >
+                {budgetProgress.length > 0 ? (
+                  budgetProgress.map((budget) => (
+                    <div
+                      key={budget.id}
+                      className={"flex-shrink-0"}>
+                      <BudgetStatus
+                        category={budget.category}
+                        spent={budget.spent}
+                        total={parseFloat(budget.amount)}
+                      />
+                    </div>
+                  ))
+                ) : (
+                  <div className="h-full flex items-center justify-center">
+                    <p className="text-sm text-center text-gray-500">
+                      No budgets set for this month.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Expense Breakdown */}
+          <Card className="flex flex-col h-[320px]">
+            <CardHeader className="flex-shrink-0">
+              <CardTitle>Expense Breakdown (Today)</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 flex items-center justify-center">
+            <div className="w-[240px] h-[240px] relative flex items-center justify-center">
+                <ExpensePieChart transactions={todaysTransactions} />
+            </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

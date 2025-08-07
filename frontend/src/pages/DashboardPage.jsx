@@ -124,7 +124,7 @@ export default function DashboardPage() {
       <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-5 flex-1 min-h-0">
         {/* Today's Transactions */}
         <div className="lg:col-span-3 flex flex-col min-h-0">
-          <Card className="flex flex-col h-full">
+          <Card className="flex flex-col h-full max-h-[calc(100vh-200px)]">
             <CardHeader className="flex flex-row items-center flex-shrink-0">
               <div className="grid gap-2">
                 <CardTitle>Today's Transactions</CardTitle>
@@ -171,17 +171,22 @@ export default function DashboardPage() {
         </div>
 
         {/* Right Column */}
-        <div className="lg:col-span-2 flex flex-col gap-6 min-h-0">
-          {/* Budget Status - Fixed height with limited items and scroll */}
-          <Card className="flex flex-col h-1/2">
+        <div className="lg:col-span-2 flex flex-col gap-6 h-[calc(100vh-200px)]">
+          {/* Budget Status */}
+          <Card className="flex flex-col h-[320px]">
             <CardHeader className="flex-shrink-0">
               <CardTitle>Budget Status (This Month)</CardTitle>
             </CardHeader>
             <CardContent className="flex-1 overflow-hidden">
-              <div className="h-full overflow-y-auto scrollbar-hide space-y-4">
+              <div
+                className="space-y-4 overflow-y-auto scrollbar-hide"
+                style={{ maxHeight: 'calc(100%)'}}
+              >
                 {budgetProgress.length > 0 ? (
                   budgetProgress.map((budget) => (
-                    <div key={budget.id} className="flex-shrink-0">
+                    <div
+                      key={budget.id}
+                      className={"flex-shrink-0"}>
                       <BudgetStatus
                         category={budget.category}
                         spent={budget.spent}
@@ -200,15 +205,15 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Expense Breakdown - Takes remaining height */}
-          <Card className="flex flex-col h-1/2">
+          {/* Expense Breakdown */}
+          <Card className="flex flex-col h-[320px]">
             <CardHeader className="flex-shrink-0">
               <CardTitle>Expense Breakdown (Today)</CardTitle>
             </CardHeader>
-            <CardContent className="flex-1 flex items-center justify-center min-h-0">
-              <div className="w-full h-full max-w-[240px] max-h-[240px] flex items-center justify-center">
+            <CardContent className="flex-1 flex items-center justify-center">
+            <div className="w-[240px] h-[240px] relative flex items-center justify-center">
                 <ExpensePieChart transactions={todaysTransactions} />
-              </div>
+            </div>
             </CardContent>
           </Card>
         </div>

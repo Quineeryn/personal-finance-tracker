@@ -171,16 +171,16 @@ export default function DashboardPage() {
         </div>
 
         {/* Right Column */}
-        <div className="lg:col-span-2 flex flex-col gap-6">
+        <div className="lg:col-span-2 flex flex-col gap-6 h-[calc(100vh-200px)]">
           {/* Budget Status */}
-          <Card className="flex flex-col max-h-[320px]">
+          <Card className="flex flex-col h-[320px]">
             <CardHeader className="flex-shrink-0">
               <CardTitle>Budget Status (This Month)</CardTitle>
             </CardHeader>
             <CardContent className="flex-1 overflow-hidden">
               <div
                 className="space-y-4 overflow-y-auto scrollbar-hide"
-                style={{ maxHeight: '320px'}}
+                style={{ maxHeight: 'calc(100%'}}
               >
                 {budgetProgress.length > 0 ? (
                   budgetProgress.map((budget) => (
@@ -206,7 +206,7 @@ export default function DashboardPage() {
           </Card>
 
           {/* Expense Breakdown */}
-          <Card className="flex flex-col max-h-[320px]">
+          <Card className="flex flex-col h-[320px]">
             <CardHeader className="flex-shrink-0">
               <CardTitle>Expense Breakdown (Today)</CardTitle>
             </CardHeader>

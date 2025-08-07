@@ -171,22 +171,23 @@ export default function DashboardPage() {
         </div>
 
         {/* Right Column */}
-        <div className="lg:col-span-2 flex flex-col gap-6 h-[calc(100vh-200px)]">
+        <div className="lg:col-span-2 flex flex-col gap-6 h-full">
           {/* Budget Status */}
-          <Card className="flex flex-col h-[320px]">
+          <Card className="flex flex-col h-[50%]">
             <CardHeader className="flex-shrink-0">
               <CardTitle>Budget Status (This Month)</CardTitle>
             </CardHeader>
-            <CardContent className="flex-1 overflow-hidden">
+            <CardContent className="flex-1 overflow-y-auto">
               <div
-                className="space-y-4 overflow-y-auto scrollbar-hide"
-                style={{ maxHeight: 'calc(100%)'}}
+                className="space-y-4"
+                style={{ maxHeight: 'calc(100% - 40px)' }}
               >
                 {budgetProgress.length > 0 ? (
-                  budgetProgress.map((budget) => (
+                  budgetProgress.slice(0, 4).map((budget) => (
                     <div
                       key={budget.id}
-                      className={"flex-shrink-0"}>
+                      className="flex-shrink-0"
+                    >
                       <BudgetStatus
                         category={budget.category}
                         spent={budget.spent}
@@ -206,14 +207,14 @@ export default function DashboardPage() {
           </Card>
 
           {/* Expense Breakdown */}
-          <Card className="flex flex-col h-[320px]">
+          <Card className="flex flex-col h-[50%]">
             <CardHeader className="flex-shrink-0">
               <CardTitle>Expense Breakdown (Today)</CardTitle>
             </CardHeader>
             <CardContent className="flex-1 flex items-center justify-center">
-            <div className="w-[240px] h-[240px] relative flex items-center justify-center">
+              <div className="w-full h-full relative flex items-center justify-center">
                 <ExpensePieChart transactions={todaysTransactions} />
-            </div>
+              </div>
             </CardContent>
           </Card>
         </div>

@@ -13,19 +13,22 @@ export default function Layout() {
     { href: "/", label: "Dashboard", icon: Home },
     { href: "/transactions", label: "Transactions", icon: Wallet },
     { href: "/budgets", label: "Budgets", icon: PieChart },
+    // { href: "/settings", label: "Settings", icon: Settings }, // Kita bisa tambahkan ini nanti
   ];
 
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       <aside className="hidden border-r bg-muted/40 md:block">
         <div className="flex flex-col h-full max-h-screen gap-2">
-          {/* ... Sidebar Header, Navigasi, dan User Info Anda tetap sama ... */}
+          {/* Sidebar Header */}
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
             <Link to="/" className="flex items-center gap-2 font-semibold">
               <PieChart className="h-6 w-6 text-indigo-600" />
               <span className="">FinTrack</span>
             </Link>
           </div>
+
+          {/* Navigasi Utama */}
           <div className="flex-1">
             <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
               {navItems.map((item) => (
@@ -43,6 +46,8 @@ export default function Layout() {
               ))}
             </nav>
           </div>
+
+          {/* User Info & Logout */}
           <div className="mt-auto p-4 border-t">
             <div className="flex items-center gap-3 mb-3">
               <div className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold">
@@ -61,19 +66,12 @@ export default function Layout() {
         </div>
       </aside>
 
-      {/* --- PERBAIKAN UTAMA ADA DI SINI --- */}
-      <div className="flex flex-col">
-        <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6">
-            {/* Header ini bisa diisi tombol Add Transaction global nanti */}
-            <div className="w-full flex-1">
-                {/* Kosongkan untuk sekarang */}
-            </div>
-        </header>
-        <main className="flex-1 overflow-auto p-4 lg:p-8">
-          <Outlet />
+      <div className="flex flex-col min-h-screen overflow-hidden">
+        {/* Konten Utama */}
+        <main className="flex-1 p-4 bg-gray-50 lg:p-8 overflow-hidden">
+          <Outlet /> {/* <-- Semua halaman (Dashboard, Transaksi) akan dirender di sini */}
         </main>
       </div>
-      {/* --- AKHIR PERBAIKAN --- */}
     </div>
   );
 }

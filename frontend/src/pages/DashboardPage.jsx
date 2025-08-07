@@ -177,7 +177,7 @@ export default function DashboardPage() {
             <CardHeader className="flex-shrink-0">
               <CardTitle>Budget Status (This Month)</CardTitle>
             </CardHeader>
-            <CardContent className="flex-1 overflow-y-auto">
+            <CardContent className="flex-1 overflow-y-auto scrollbar-thin">
               <div
                 className="space-y-4"
                 style={{ maxHeight: 'calc(100% - 40px)' }}
@@ -212,7 +212,7 @@ export default function DashboardPage() {
               <CardTitle>Expense Breakdown (Today)</CardTitle>
             </CardHeader>
             <CardContent className="flex-1 flex items-center justify-center">
-              <div className="w-full h-full relative flex items-center justify-center">
+              <div className="w-[300px] h-[300px] relative flex items-center justify-center">
                 <ExpensePieChart transactions={todaysTransactions} />
               </div>
             </CardContent>

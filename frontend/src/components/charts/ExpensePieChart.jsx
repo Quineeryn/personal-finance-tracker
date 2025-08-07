@@ -50,8 +50,6 @@ export default function ExpensePieChart({ transactions = [] }) {
   // --- AKHIR TAMBAHAN ---
 
   return(
-     <div className="h-full w-full">
      <Pie data={chartData} options={options} />
-     </div>
   );
 }

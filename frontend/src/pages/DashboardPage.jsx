@@ -171,16 +171,16 @@ export default function DashboardPage() {
         </div>
 
         {/* Right Column */}
-        <div className="lg:col-span-2 flex flex-col space-y-6 min-h-0">
+        <div className="lg:col-span-2 flex flex-col gap-6">
           {/* Budget Status */}
-          <Card className="flex flex-col flex-1 max-h-[calc(100vh-200px)]">
+          <Card className="flex flex-col max-h-[320px]">
             <CardHeader className="flex-shrink-0">
               <CardTitle>Budget Status (This Month)</CardTitle>
             </CardHeader>
             <CardContent className="flex-1 overflow-hidden">
               <div
-                className="h-full overflow-y-auto pr-2 space-y-4 scrollbar-hide"
-                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                className="space-y-4 overflow-y-auto scrollbar-hide"
+                style={{ maxHeight: '320px'}}
               >
                 {budgetProgress.length > 0 ? (
                   budgetProgress.map((budget) => (
@@ -206,15 +206,13 @@ export default function DashboardPage() {
           </Card>
 
           {/* Expense Breakdown */}
-          <Card className="flex flex-col flex-1 max-h-[calc(100vh-200px)] overflow-hidden">
+          <Card className="flex flex-col max-h-[320px]">
             <CardHeader className="flex-shrink-0">
               <CardTitle>Expense Breakdown (Today)</CardTitle>
             </CardHeader>
-            <CardContent className="flex-1 flex items-center justify-center min-h-0">
-            <div className="w-full h-full flex items-center justify-center">
-              <div className="w-full max-w-[240px] h-[240px] relative flex items-center justify-center">
+            <CardContent className="flex-1 flex items-center justify-center">
+            <div className="w-[240px] h-[240px] relative flex items-center justify-center">
                 <ExpensePieChart transactions={todaysTransactions} />
-              </div>
             </div>
             </CardContent>
           </Card>

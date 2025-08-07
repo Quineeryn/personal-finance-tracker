@@ -179,15 +179,14 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent className="flex-1 overflow-hidden">
               <div
-                className="h-full overflow-y-auto pr-2 space-y-4"
+                className="h-full overflow-y-auto pr-2 space-y-4 scrollbar-hide"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
                 {budgetProgress.length > 0 ? (
-                  budgetProgress.map((budget, index) => (
+                  budgetProgress.map((budget) => (
                     <div
                       key={budget.id}
-                      className={`flex-shrink-0 ${index >= 4 ? 'hidden md:block' : ''}`}
-                    >
+                      className={"flex-shrink-0"}>
                       <BudgetStatus
                         category={budget.category}
                         spent={budget.spent}
@@ -207,14 +206,16 @@ export default function DashboardPage() {
           </Card>
 
           {/* Expense Breakdown */}
-          <Card className="flex flex-col flex-1 max-h-[calc(100vh-200px)]">
+          <Card className="flex flex-col flex-1 max-h-[calc(100vh-200px)] overflow-hidden">
             <CardHeader className="flex-shrink-0">
               <CardTitle>Expense Breakdown (Today)</CardTitle>
             </CardHeader>
             <CardContent className="flex-1 flex items-center justify-center min-h-0">
+            <div className="w-full h-full flex items-center justify-center">
               <div className="w-full max-w-[240px] h-[240px] relative flex items-center justify-center">
                 <ExpensePieChart transactions={todaysTransactions} />
               </div>
+            </div>
             </CardContent>
           </Card>
         </div>

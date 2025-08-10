@@ -4,6 +4,7 @@ import TransactionService from '../api/transactionService';
 import Modal from '../components/common/Modal';
 import TransactionForm from '../components/transactions/transactionForm';
 import { CardFooter } from '@/components/ui/card';
+import { CSVLink } from 'react-csv';
 
 // Shadcn UI Components
 import { Button } from '@/components/ui/button';
@@ -152,9 +153,26 @@ export default function TransactionsPage() {
             <CardTitle>All Transactions</CardTitle>
             <CardDescription>Filter, manage, and review all your transactions.</CardDescription>
           </div>
-          <Button onClick={() => { setEditingTransaction(null); setIsModalOpen(true); }}>
-            Add Transaction
+          <div className="flex items-center gap-2">
+          <Button asChild>
+            <CSVLink
+              data={processedData}
+              headers={[
+                { label: "Date", key: "date" },
+                { label: "Type", key: "type" },
+                { label: "Category", key: "category" },
+                { label: "Description", key: "description" },
+                { label: "Amount", key: "amount" },
+              ]}
+              filename={`transactions-report-${new Date().toISOString().slice(0,10)}.csv`}
+            >
+              Export to CSV
+            </CSVLink>
           </Button>
+      <Button onClick={() => { setEditingTransaction(null); setIsModalOpen(true); }}>
+      Add Transaction
+    </Button>
+  </div>
         </CardHeader>
 
         {/* Filter Bar - Fixed height */}

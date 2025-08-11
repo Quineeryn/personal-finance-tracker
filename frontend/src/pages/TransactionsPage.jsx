@@ -153,7 +153,7 @@ export default function TransactionsPage() {
             <CardTitle>All Transactions</CardTitle>
             <CardDescription>Filter, manage, and review all your transactions.</CardDescription>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
           <Button asChild>
             <CSVLink
               data={processedData}
